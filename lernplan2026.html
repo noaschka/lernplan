@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Prüfungsplan SS26</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Lernplan" />
+  <meta name="theme-color" content="#1a1a2e" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; background: #f8f9fa; min-height: 100vh; }
+    #app { max-width: 480px; margin: 0 auto; padding: env(safe-area-inset-top, 20px) 16px 40px; padding-top: max(env(safe-area-inset-top), 20px); }
+
+    .install-banner { display:none; position:fixed; bottom:0; left:0; right:0; background:#1a1a2e; color:#fff; padding:14px 16px; z-index:999; align-items:center; justify-content:space-between; gap:12px; padding-bottom: max(env(safe-area-inset-bottom), 14px); }
+    .install-banner.show { display:flex; }
+    .install-banner p { font-size:13px; line-height:1.4; }
+    .install-banner strong { display:block; font-size:14px; }
+    .install-btn { background:#27ae60; color:#fff; border:none; border-radius:20px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; flex-shrink:0; }
+    .close-banner { background:none; border:none; color:#aaa; font-size:20px; cursor:pointer; flex-shrink:0; }
+
+    .header-label { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+    .header-title { font-size: 26px; font-weight: 800; color: #1a1a2e; }
+    .header-sub { font-size: 13px; color: #777; margin-top: 2px; margin-bottom: 24px; }
+    .section-label { font-size: 14px; font-weight: 700; color: #444; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .exam-card { border-radius: 12px; padding: 20px 24px; cursor: pointer; transition: transform 0.15s; margin-bottom: 12px; border-left-width: 4px; border-left-style: solid; }
+    .exam-card:active { transform: translateX(4px); }
+    .exam-card-row { display: flex; justify-content: space-between; align-items: flex-start; }
+    .exam-name { font-weight: 700; font-size: 16px; color: #1a1a2e; margin-bottom: 2px; }
+    .exam-date { font-size: 13px; color: #555; }
+    .exam-room { font-size: 12px; color: #777; margin-top: 2px; }
+    .exam-badge { color: #fff; border-radius: 20px; padding: 4px 10px; font-size: 13px; font-weight: 700; text-align: center; }
+    .exam-weeks { font-size: 11px; color: #888; margin-top: 3px; text-align: right; }
+    .timeline-wrap { position: relative; height: 80
