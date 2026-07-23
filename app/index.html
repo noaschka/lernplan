@@ -10,6 +10,22 @@
     <meta name="apple-mobile-web-app-title" content="Studium-Tracker" />
     <link rel="apple-touch-icon" href="/pwa-192.png" />
     <title>Studium-Tracker</title>
+    <script>
+      // Single Page Apps for GitHub Pages: decode the redirect from 404.html
+      // https://github.com/rafgraph/spa-github-pages
+      (function (l) {
+        if (l.search[1] === '/') {
+          var decoded = l.search
+            .slice(1)
+            .split('&')
+            .map(function (s) {
+              return s.replace(/~and~/g, '&');
+            })
+            .join('?');
+          window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+        }
+      })(window.location);
+    </script>
   </head>
   <body>
     <div id="root"></div>
