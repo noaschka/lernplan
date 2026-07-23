@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Studium-Tracker">
+<title>Studium-Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f9fa;color:#1a1a2e;min-height:100vh}
+.wrap{max-width:760px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:1.5rem}
+h1{font-size:24px;font-weight:800}
+.sub{font-size:13px;color:#888;margin-top:2px}
+.iconbtn{width:36px;height:36px;border-radius:10px;border:1.5px solid #e0e0e0;background:#fff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.iconbtn:hover{border-color:#1a1a2e}
+.toprow{display:flex;gap:8px;flex-shrink:0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:1.75rem}
+.card{background:#fff;border:1.5px solid #e8e8e8;border-radius:14px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card-lbl{font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.card-val{font-size:22px;font-weight:800}
+.card-sub{font-size:12px;color:#888;margin-top:3px}
+.pbar{background:#e8e8e8;border-radius:5px;height:7px;overflow:hidden;margin-top:8px}
+.pbar>div{height:100%;border-radius:5px;transition:width .3s}
+.section-title{font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:1.5px;margin:1.75rem 0 10px}
+.upcoming{background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;padding:12px 14px;margin-bottom:1.5rem}
+.upcoming.empty{background:#f8f8f8;border-color:#e8e8e8;color:#999;font-size:13px}
+.up-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:5px 0}
+.up-row+.up-row{border-top:1px solid rgba(0,0,0,.06)}
+.up-days{font-weight:700;color:#92400e;background:#fff;border-radius:20px;padding:2px 10px;font-size:12px;flex-shrink:0;margin-left:10px}
+.sem{background:#fff;border:1.5px solid #e8e8e8;border-radius:16px;padding:1.25rem;margin-bottom:14px}
+.sem-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:10px}
+.sem-name{font-size:16px;font-weight:700}
+.sem-meta{font-size:12px;color:#888;margin-top:2px}
+.sem-actions{display:flex;gap:6px;flex-shrink:0}
+.mod{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #f2f2f2}
+.mod-main{flex:1;min-width:0}
+.mod-name{font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mod-meta{font-size:11.5px;color:#999;margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.grade{font-weight:800;font-size:14px;width:34px;text-align:center;flex-shrink:0}
+.statsel{font-size:11.5px;padding:5px 7px;border-radius:8px;border:1.5px solid #e0e0e0;font-family:inherit;background:#fff;flex-shrink:0}
+.mod-btns{display:flex;gap:4px;flex-shrink:0}
+.empty-hint{font-size:13px;color:#aaa;padding:8px 0}
+.btn{padding:8px 14px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid #e0e0e0;background:#fff;color:#444;font-family:inherit}
+.btn:hover{background:#f5f5f5}
+.btn.pri{background:#1a1a2e;color:#fff;border-color:#1a1a2e}
+.btn.pri:hover{background:#2c3e50}
+.btn.sm{padding:5px 9px;font-size:12px;border-radius:7px}
+.btn.del{color:#ef4444;border-color:#fecaca;background:#fff5f5}
+.btn.add{background:#f8f8f8;border-style:dashed;color:#888;width:100%;margin-top:4px}
+.btn.add:hover{background:#f0f0f0;color:#555}
+.fab-row{display:flex;justify-content:center;margin-top:1.5rem}
+.modal-overlay{position:fixed;inset:0;background:rgba(20,20,30,.45);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+.modal-overlay.hidden{display:none}
+.modal{background:#fff;border-radius:18px 18px 0 0;max-width:480px;width:100%;max-height:88vh;overflow-y:auto;padding:1.5rem}
+@media(min-width:560px){.modal-overlay{align-items:center}.modal{border-radius:18px}}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem}
+.modal-head span{font-size:17px;font-weight:800}
+.modal-head button{background:none;border:none;font-size:22px;color:#bbb;cursor:pointer;line-height:1}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:5px}
+.field input,.field select{width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:14px;font-family:inherit;color:#1a1a2e;background:#fff;outline:none}
+.field input:focus,.field select:focus{border-color:#1a1a2e;box-shadow:0 0 0 3px rgba(26,26,46,.08)}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-actions{display:flex;gap:10px;margin-top:1.25rem}
+.modal-actions .btn{flex:1}
+.err{font-size:12px;color:#ef4444;margin:-6px 0 10px;display:none}
+.err.show{display:block}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:1rem}
+.backlink{font-size:12.5px;color:#888;text-decoration:none;display:inline-block;margin-bottom:10px}
+.backlink:hover{color:#1a1a2e}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="backlink" href="index.html">&larr; Lernplan-Generator</a>
+  <div class="topbar">
+    <div>
+      <h1 id="hdrTitle">Studium-Tracker</h1>
+      <div class="sub" id="hdrSub">Module, ECTS &amp; Noten im Blick</div>
+    </div>
+    <div class="toprow">
+      <button class="iconbtn" id="btnExport" title="Export">&darr;</button>
+      <button class="iconbtn" id="btnImport" title="Import">&uarr;</button>
+      <input type="file" id="fileImport" accept="application/json" style="display:none">
+      <button class="iconbtn" id="btnSettings" title="Einstellungen">&#9881;&#65039;</button>
+    </div>
+  </div>
+
+  <div class="cards" id="cards"></div>
+  <div id="upcomingWrap"></div>
+
+  <div class="section-title">Semester</div>
+  <div id="semesters"></div>
+
+  <div class="fab-row"><button class="btn pri" id="btnAddSem">+ Semester hinzuf&uuml;gen</button></div>
+</div>
+
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head"><span id="modalTitle"></span><button id="modalClose">&times;</button></div>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn" id="modalCancel">Abbrechen</button>
+      <button class="btn pri" id="modalSave">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var LSKEY='studiumTrackerData_v1';
+var STATUS_OPTS=[
+  {v:'geplant',l:'Geplant',c:'#94a3b8'},
+  {v:'laufend',l:'Laufend',c:'#2980b9'},
+  {v:'bestanden',l:'Bestanden',c:'#22c55e'},
+  {v:'nicht bestanden',l:'Nicht bestanden',c:'#ef4444'}
+];
+function statusColor(v){var s=STATUS_OPTS.find(function(o){return o.v===v;});return s?s.c:'#94a3b8';}
+function statusLabel(v){var s=STATUS_OPTS.find(function(o){return o.v===v;});return s?s.l:v;}
+
+function defaultState(){return{meta:{studiengang:'Mein Studium',zielEcts:180,zielNote:null},semesters:[]};}
+var STATE=loadState();
+
+function loadState(){
+  try{var raw=localStorage.getItem(LSKEY);if(raw){var d=JSON.parse(raw);if(d&&d.meta&&d.semesters)return d;}}catch(e){}
+  return defaultState();
+}
+function saveState(){localStorage.setItem(LSKEY,JSON.stringify(STATE));}
+function uid(){return 'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
+function hx(s){return(s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function todayISO(){var d=new Date();d.setHours(0,0,0,0);return d.toISOString().slice(0,10);}
+function daysUntil(iso){var t=new Date();t.setHours(0,0,0,0);var d=new Date(iso+'T00:00:00');return Math.ceil((d-t)/864e5);}
+function fmtDate(iso){return new Date(iso+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function fmtGrade(g){return(g===null||g===undefined||g==='')?'–':Number(g).toFixed(1);}
+
+function allModules(){var out=[];STATE.semesters.forEach(function(s){s.modules.forEach(function(m){out.push({sem:s,mod:m});});});return out;}
+
+function computeStats(){
+  var ectsEarned=0,ectsLaufend=0,ectsTotal=0,sumG=0,sumGE=0,passed=0,total=0,failed=0;
+  allModules().forEach(function(x){
+    var m=x.mod;var e=Number(m.ects)||0;
+    total++;
+    ectsTotal+=e;
+    if(m.status==='bestanden'){ectsEarned+=e;passed++;if(m.grade!==null&&m.grade!==''&&m.grade!==undefined){sumG+=Number(m.grade)*e;sumGE+=e;}}
+    else if(m.status==='laufend'){ectsLaufend+=e;}
+    else if(m.status==='nicht bestanden'){failed++;}
+  });
+  var avg=sumGE?sumG/sumGE:null;
+  return{ectsEarned:ectsEarned,ectsLaufend:ectsLaufend,ectsTotal:ectsTotal,avg:avg,passed:passed,total:total,failed:failed};
+}
+
+function upcomingExams(){
+  var t=todayISO();
+  return allModules().filter(function(x){return x.mod.pruefungsdatum&&(x.mod.status==='geplant'||x.mod.status==='laufend')&&x.mod.pruefungsdatum>=t;})
+    .sort(function(a,b){return a.mod.pruefungsdatum<b.mod.pruefungsdatum?-1:1;});
+}
+
+function renderCards(){
+  var st=computeStats();
+  var ziel=Number(STATE.meta.zielEcts)||0;
+  var pct=ziel?Math.min(100,Math.round(st.ectsEarned/ziel*100)):0;
+  var zn=STATE.meta.zielNote;
+  var avgOk=st.avg!==null&&zn!==null&&zn!==''?(st.avg<=Number(zn)):null;
+  var h='';
+  h+='<div class="card"><div class="card-lbl">ECTS erreicht</div><div class="card-val">'+st.ectsEarned+(ziel?' / '+ziel:'')+'</div>'
+    +(ziel?'<div class="pbar"><div style="width:'+pct+'%;background:#1a1a2e"></div></div><div class="card-sub">'+pct+'% des Ziels</div>':'<div class="card-sub">Kein Ziel gesetzt</div>')
+    +(st.ectsLaufend?'<div class="card-sub">+'+st.ectsLaufend+' ECTS laufend</div>':'')
+    +'</div>';
+  h+='<div class="card"><div class="card-lbl">Notendurchschnitt</div><div class="card-val" style="color:'+(avgOk===true?'#22c55e':avgOk===false?'#ef4444':'#1a1a2e')+'">'+(st.avg!==null?st.avg.toFixed(2):'–')+'</div>'
+    +'<div class="card-sub">'+(zn?'Ziel: '+Number(zn).toFixed(1):'ECTS-gewichtet')+'</div></div>';
+  h+='<div class="card"><div class="card-lbl">Module</div><div class="card-val">'+st.passed+' / '+st.total+'</div>'
+    +'<div class="card-sub">bestanden'+(st.failed?' · '+st.failed+' nicht bestanden':'')+'</div></div>';
+  var ue=upcomingExams();
+  var next=ue[0];
+  h+='<div class="card"><div class="card-lbl">N&auml;chste Pr&uuml;fung</div>';
+  if(next){
+    var d=daysUntil(next.mod.pruefungsdatum);
+    h+='<div class="card-val" style="font-size:16px">'+hx(next.mod.name)+'</div><div class="card-sub">'+fmtDate(next.mod.pruefungsdatum)+' · in '+d+' Tag'+(d===1?'':'en')+'</div>';
+  }else{
+    h+='<div class="card-val" style="font-size:16px;color:#ccc">–</div><div class="card-sub">Keine anstehend</div>';
+  }
+  h+='</div>';
+  document.getElementById('cards').innerHTML=h;
+}
+
+function renderUpcoming(){
+  var ue=upcomingExams().slice(0,5);
+  var wrap=document.getElementById('upcomingWrap');
+  if(!ue.length){wrap.innerHTML='';return;}
+  var rows=ue.map(function(x){var d=daysUntil(x.mod.pruefungsdatum);
+    return'<div class="up-row"><span>'+hx(x.mod.name)+' <span style="color:#bbb">('+hx(x.sem.name)+')</span></span><span class="up-days">'+fmtDate(x.mod.pruefungsdatum)+' · '+d+'d</span></div>';
+  }).join('');
+  wrap.innerHTML='<div class="section-title" style="margin-top:0">Anstehende Pr&uuml;fungen</div><div class="upcoming">'+rows+'</div>';
+}
+
+function renderSemesters(){
+  var el=document.getElementById('semesters');
+  if(!STATE.semesters.length){el.innerHTML='<div class="empty-hint">Noch keine Semester angelegt. Leg dein erstes Semester an, um Module zu tracken.</div>';return;}
+  el.innerHTML=STATE.semesters.map(function(s){
+    var e=0,pe=0;s.modules.forEach(function(m){pe+=Number(m.ects)||0;if(m.status==='bestanden')e+=Number(m.ects)||0;});
+    var mods=s.modules.length?s.modules.map(function(m){
+      var opts=STATUS_OPTS.map(function(o){return'<option value="'+o.v+'"'+(m.status===o.v?' selected':'')+'>'+o.l+'</option>';}).join('');
+      return'<div class="mod">'
+        +'<div class="mod-main"><div class="mod-name">'+hx(m.name)+'</div>'
+        +'<div class="mod-meta"><span>'+(Number(m.ects)||0)+' ECTS</span>'+(m.typ?'<span>'+hx(m.typ)+'</span>':'')+(m.pruefungsdatum?'<span>'+fmtDate(m.pruefungsdatum)+'</span>':'')+'</div></div>'
+        +'<div class="grade">'+fmtGrade(m.grade)+'</div>'
+        +'<select class="statsel" data-status-change data-sem="'+s.id+'" data-mod="'+m.id+'">'+opts+'</select>'
+        +'<div class="mod-btns"><button class="btn sm" data-act="edit-module" data-sem="'+s.id+'" data-mod="'+m.id+'">&#9998;</button>'
+        +'<button class="btn sm del" data-act="delete-module" data-sem="'+s.id+'" data-mod="'+m.id+'">&times;</button></div>'
+        +'</div>';
+    }).join(''):'<div class="empty-hint">Noch keine Module in diesem Semester.</div>';
+    return'<div class="sem"><div class="sem-head"><div><div class="sem-name">'+hx(s.name)+'</div><div class="sem-meta">'+e+' / '+pe+' ECTS erreicht · '+s.modules.length+' Module</div></div>'
+      +'<div class="sem-actions"><button class="btn sm" data-act="edit-semester" data-sem="'+s.id+'">&#9998;</button><button class="btn sm del" data-act="delete-semester" data-sem="'+s.id+'">&times;</button></div></div>'
+      +mods
+      +'<button class="btn add" data-act="add-module" data-sem="'+s.id+'">+ Modul hinzuf&uuml;gen</button>'
+      +'</div>';
+  }).join('');
+}
+
+function renderHeader(){
+  document.getElementById('hdrTitle').textContent=STATE.meta.studiengang||'Studium-Tracker';
+  document.getElementById('hdrSub').textContent='Module, ECTS & Noten im Blick';
+}
+
+function render(){renderHeader();renderCards();renderUpcoming();renderSemesters();}
+
+// ---- Modal ----
+var modalOverlay=document.getElementById('modalOverlay');
+var modalBody=document.getElementById('modalBody');
+var currentSave=null;
+function openModal(title,bodyHtml,onSave){
+  document.getElementById('modalTitle').textContent=title;
+  modalBody.innerHTML=bodyHtml;
+  currentSave=onSave;
+  modalOverlay.classList.remove('hidden');
+}
+function closeModal(){modalOverlay.classList.add('hidden');currentSave=null;modalBody.innerHTML='';}
+document.getElementById('modalClose').addEventListener('click',closeModal);
+document.getElementById('modalCancel').addEventListener('click',closeModal);
+modalOverlay.addEventListener('click',function(e){if(e.target===modalOverlay)closeModal();});
+document.getElementById('modalSave').addEventListener('click',function(){
+  if(currentSave&&currentSave()!==false)closeModal();
+});
+
+function fieldVal(id){var el=document.getElementById(id);return el?el.value.trim():'';}
+
+// ---- Settings ----
+function openSettings(){
+  var m=STATE.meta;
+  openModal('Einstellungen',
+    '<div class="field"><label>Studiengang</label><input id="fStudiengang" value="'+hx(m.studiengang)+'"></div>'
+    +'<div class="frow2"><div class="field"><label>Ziel-ECTS</label><input id="fZielEcts" type="number" min="0" value="'+hx(m.zielEcts)+'"></div>'
+    +'<div class="field"><label>Ziel-Note (optional)</label><input id="fZielNote" type="number" min="1" max="5" step="0.1" value="'+hx(m.zielNote==null?'':m.zielNote)+'"></div></div>',
+    function(){
+      STATE.meta.studiengang=fieldVal('fStudiengang')||'Mein Studium';
+      STATE.meta.zielEcts=parseInt(fieldVal('fZielEcts'))||0;
+      var zn=fieldVal('fZielNote');
+      STATE.meta.zielNote=zn?parseFloat(zn):null;
+      saveState();render();
+    });
+}
+
+// ---- Semester modal ----
+function openSemesterModal(sem){
+  openModal(sem?'Semester bearbeiten':'Semester hinzufügen',
+    '<div class="field"><label>Bezeichnung</label><input id="fSemName" placeholder="z.B. WS 2025/26" value="'+hx(sem?sem.name:'')+'"></div>'
+    +'<div class="err" id="semErr">Bitte eine Bezeichnung eingeben.</div>',
+    function(){
+      var name=fieldVal('fSemName');
+      if(!name){document.getElementById('semErr').classList.add('show');return false;}
+      if(sem){sem.name=name;}
+      else{STATE.semesters.push({id:uid(),name:name,modules:[]});}
+      saveState();render();
+    });
+}
+
+// ---- Module modal ----
+function openModuleModal(semId,mod){
+  var sopts=STATUS_OPTS.map(function(o){return'<option value="'+o.v+'"'+(mod&&mod.status===o.v?' selected':'')+'>'+o.l+'</option>';}).join('');
+  var topts=['','Pflicht','Wahlpflicht'].map(function(t){return'<option value="'+t+'"'+(mod&&mod.typ===t?' selected':'')+'>'+(t||'–')+'</option>';}).join('');
+  openModal(mod?'Modul bearbeiten':'Modul hinzufügen',
+    '<div class="field"><label>Modulname</label><input id="fModName" placeholder="z.B. Analysis 2" value="'+hx(mod?mod.name:'')+'"></div>'
+    +'<div class="err" id="modErr">Bitte einen Modulnamen eingeben.</div>'
+    +'<div class="frow2"><div class="field"><label>ECTS</label><input id="fModEcts" type="number" min="0" value="'+hx(mod?mod.ects:5)+'"></div>'
+    +'<div class="field"><label>Typ</label><select id="fModTyp">'+topts+'</select></div></div>'
+    +'<div class="frow2"><div class="field"><label>Status</label><select id="fModStatus">'+sopts+'</select></div>'
+    +'<div class="field"><label>Note (1.0&ndash;5.0)</label><input id="fModGrade" type="number" min="1" max="5" step="0.1" value="'+hx(mod&&mod.grade!=null?mod.grade:'')+'"></div></div>'
+    +'<div class="field"><label>Pr&uuml;fungsdatum</label><input id="fModDate" type="date" value="'+hx(mod?mod.pruefungsdatum:'')+'"></div>',
+    function(){
+      var name=fieldVal('fModName');
+      if(!name){document.getElementById('modErr').classList.add('show');return false;}
+      var sem=STATE.semesters.find(function(s){return s.id===semId;});
+      var grade=fieldVal('fModGrade');
+      var data={name:name,ects:parseFloat(fieldVal('fModEcts'))||0,typ:fieldVal('fModTyp'),status:fieldVal('fModStatus'),grade:grade?parseFloat(grade):null,pruefungsdatum:fieldVal('fModDate')};
+      if(mod){Object.assign(mod,data);}
+      else{data.id=uid();sem.modules.push(data);}
+      saveState();render();
+    });
+}
+
+// ---- Event delegation ----
+document.getElementById('btnAddSem').addEventListener('click',function(){openSemesterModal(null);});
+document.getElementById('btnSettings').addEventListener('click',openSettings);
+
+document.addEventListener('click',function(e){
+  var el=e.target.closest('[data-act]');
+  if(!el)return;
+  var act=el.dataset.act;
+  var semId=el.dataset.sem;
+  var sem=semId?STATE.semesters.find(function(s){return s.id===semId;}):null;
+  if(act==='edit-semester')openSemesterModal(sem);
+  else if(act==='delete-semester'){
+    if(confirm('Semester "'+sem.name+'" inkl. aller Module wirklich löschen?')){
+      STATE.semesters=STATE.semesters.filter(function(s){return s.id!==semId;});
+      saveState();render();
+    }
+  }
+  else if(act==='add-module')openModuleModal(semId,null);
+  else if(act==='edit-module'){
+    var mod=sem.modules.find(function(m){return m.id===el.dataset.mod;});
+    openModuleModal(semId,mod);
+  }
+  else if(act==='delete-module'){
+    if(confirm('Modul wirklich löschen?')){
+      sem.modules=sem.modules.filter(function(m){return m.id!==el.dataset.mod;});
+      saveState();render();
+    }
+  }
+});
+
+document.addEventListener('change',function(e){
+  var el=e.target.closest('[data-status-change]');
+  if(!el)return;
+  var sem=STATE.semesters.find(function(s){return s.id===el.dataset.sem;});
+  var mod=sem&&sem.modules.find(function(m){return m.id===el.dataset.mod;});
+  if(mod){mod.status=el.value;saveState();render();}
+});
+
+// ---- Export / Import ----
+document.getElementById('btnExport').addEventListener('click',function(){
+  var blob=new Blob([JSON.stringify(STATE,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;
+  a.download='studium-tracker-backup.json';
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+});
+document.getElementById('btnImport').addEventListener('click',function(){document.getElementById('fileImport').click();});
+document.getElementById('fileImport').addEventListener('change',function(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(){
+    try{
+      var data=JSON.parse(reader.result);
+      if(!data||!data.meta||!data.semesters)throw new Error('invalid');
+      if(confirm('Import ersetzt alle aktuellen Daten. Fortfahren?')){STATE=data;saveState();render();}
+    }catch(err){alert('Ungültige Datei.');}
+  };
+  reader.readAsText(file);
+  e.target.value='';
+});
+
+render();
+</script>
+</body>
+</html>
