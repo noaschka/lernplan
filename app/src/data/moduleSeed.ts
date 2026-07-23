@@ -679,12 +679,12 @@ ten von Rechtsstreitigkeiten geschaffen und konsensorientierte Möglichkeiten de
 sung von Interessenkonflikten aufgezeigt.`,
   },
   {
-    kuerzel: `W-09`,
-    name: `Physik 2`,
+    kuerzel: `W-08`,
+    name: `Physik 1`,
     semesterSoll: 2,
-    ects: 9.0,
-    swsVorlesung: 14,
-    workloadGesamt: 510,
+    ects: 5.0,
+    swsVorlesung: 8,
+    workloadGesamt: 280,
     pruefungsform: `schr. P. 90 Min.`,
     inhalte: `o Einheitensysteme
 o Physikalische Grössen
@@ -718,16 +718,62 @@ o Teil 6: Wellen (mathematische Beschreibung, Ausbreitung, Überlagerung, ste-
 hende Wellen, Beugung, Interferenz, Dopplereffekt)
 o Teil 7: Optik (elektromagnet. Wellen, Spektrum, Dispersion, Strahlenoptik
 (Abbildungen, optische Geräte), Wellenoptik (Beugung, Interferenz, Polarisa-
-tion, Anwendungen in der Technik)
-
-Fach "Physik 2"
+tion, Anwendungen in der Technik)`,
+    lehrziele: `Nach dem erfolgreichen Abschluss des Moduls können die Studierenden zu realen phy-
+sikalischen Vorgängen und Phänomenen aus dem Bereich der Mechanik, der Fluidme-
+chanik, der Schwingungen, Wellen, Thermodynamik und der Strahlenoptik ein ideali-
+siertes mathematisches Modell erstellen und anhand des Modells grundlegende Frage-
+stellungen beantworten.
+Insbesondere sind die Studierenden nach Abschluss des Moduls in der Lage,
+o die physikalischen Grundlagen der Mechanik, Fluidmechanik, Schwingungen,
+Wellen und Thermodynamik zu verstehen
+o die Gesetze der linearen Bewegung und der Drehbewegung anzuwenden
+o die Erhaltungssätze von Energie, linearem Impuls und Drehimpuls zur Lösung
+von Problemen anzuwenden
+o die Bewegungsgleichungen für reale Systeme aufzustellen und zu lösen
+o Berechnungen für gegebene Systemparameter anhand der erstellten Mo-
+delle durchzuführen
+o die Unterschiede zwischen Modell und realem System zu benennen
+o den Übergang vom schwingenden Einzelkörper zur Welle im schwingenden
+Kontinuum zu verstehen
+o die Ausbreitung von Wellen in 1D, 2D und 3D zu erklären und die Auswirkun-
+gen des Dopplereffekts zu berechnen
+o die Effekte von Beugung und Interferenz in 1D, 2D und 3D zu erklären und zu
+berechnen
+o stehende Wellen auf begrenzten Medien als Modell für die Funktionsweise von
+Musikinstrumenten heranzuziehen
+o thermodynamische Systeme mittels ihrer Zustandsgrössen zu beschreiben
+o thermodynamische Zustandsänderungen idealer Gase zu erklären und zu be-
+rechnen
+o mit Hilfe der Gesetze der Strahlenoptik (Reflexion und Brechung) den Weg von
+Lichtstrahlen zu berechnen und zu zeichnen
+o die Wirkung von brechenden Elementen zu erklären und zu berechnen
+o die Funktionsweise einfacher optischer Geräte zu erklären und ihre Abbildung
+zu berechnen und konstruieren
+Die Studierenden können nach der Teilnahme an der Veranstaltung ihre erworbenen
+Kenntnisse bei der Lösung formaler Aufgaben und bei realen Experimenten im Prakti-
+kum anwenden
+Zusätzlich sind die Studierenden nach Abschluss des Moduls in der Lage, in Kleingrup-
+pen physikalische Probleme in der adäquaten Fachsprache zu diskutieren, sich gegen-
+seitig physikalische Zusammenhänge zu erklären und gemeinsam eine Lösung des
+Problems zu erarbeiten und zu bewerten.`,
+  },
+  {
+    kuerzel: `W-09`,
+    name: `Physik 2`,
+    semesterSoll: 3,
+    ects: 4.0,
+    swsVorlesung: 6,
+    workloadGesamt: 230,
+    pruefungsform: `schr. P. 90 Min.`,
+    inhalte: `Fach "Physik 2"
 o Einführung und Grundbegriffe (Temperatur, Temperaturskalen, Temperaturfel-
 der, Wärme, Wärmestrom, Wärmestromdichte)
 o Wärmetransportmechanismen (Leitung, Konvektion, Strahlung) und Transport-
 gesetze
 o Allgemeine Fouriersche Wärmeleitungsdifferentialgleichung (Anfangs- und
 Randbedingungen, Lösungen)
-51o Einfache Massen- und Energiebilanzen
+o Einfache Massen- und Energiebilanzen
 o Elektrische Analogie (thermische Widerstände und Leitwerte, Serien- und Pa-
 rallelschaltung), Wärmedurchgang und Transmission; Wärmedurchgangskoeffi-
 zienten (U-Werte) ein- und mehrschichtiger homogener Bauteile; Kontaktwi-
@@ -753,46 +799,7 @@ o Zustandsänderungen des idealen Gases
 o Wärmeleitfähigkeit und Wärmeausdehnung
 o Wheatstone\`sche Messbrücke
 o Ersatzspannungsquellen`,
-    lehrziele: `Nach dem erfolgreichen Abschluss des Moduls können die Studierenden zu realen phy-
-sikalischen Vorgängen und Phänomenen aus dem Bereich der Mechanik, der Fluidme-
-chanik, der Schwingungen, Wellen, Thermodynamik und der Strahlenoptik ein ideali-
-siertes mathematisches Modell erstellen und anhand des Modells grundlegende Frage-
-stellungen beantworten.
-Insbesondere sind die Studierenden nach Abschluss des Moduls in der Lage,
-o die physikalischen Grundlagen der Mechanik, Fluidmechanik, Schwingungen,
-Wellen und Thermodynamik zu verstehen
-o die Gesetze der linearen Bewegung und der Drehbewegung anzuwenden
-o die Erhaltungssätze von Energie, linearem Impuls und Drehimpuls zur Lösung
-von Problemen anzuwenden
-o die Bewegungsgleichungen für reale Systeme aufzustellen und zu lösen
-44o Berechnungen für gegebene Systemparameter anhand der erstellten Mo-
-delle durchzuführen
-o die Unterschiede zwischen Modell und realem System zu benennen
-o den Übergang vom schwingenden Einzelkörper zur Welle im schwingenden
-Kontinuum zu verstehen
-o die Ausbreitung von Wellen in 1D, 2D und 3D zu erklären und die Auswirkun-
-gen des Dopplereffekts zu berechnen
-o die Effekte von Beugung und Interferenz in 1D, 2D und 3D zu erklären und zu
-berechnen
-o stehende Wellen auf begrenzten Medien als Modell für die Funktionsweise von
-Musikinstrumenten heranzuziehen
-o thermodynamische Systeme mittels ihrer Zustandsgrössen zu beschreiben
-o thermodynamische Zustandsänderungen idealer Gase zu erklären und zu be-
-rechnen
-o mit Hilfe der Gesetze der Strahlenoptik (Reflexion und Brechung) den Weg von
-Lichtstrahlen zu berechnen und zu zeichnen
-o die Wirkung von brechenden Elementen zu erklären und zu berechnen
-o die Funktionsweise einfacher optischer Geräte zu erklären und ihre Abbildung
-zu berechnen und konstruieren
-Die Studierenden können nach der Teilnahme an der Veranstaltung ihre erworbenen
-Kenntnisse bei der Lösung formaler Aufgaben und bei realen Experimenten im Prakti-
-kum anwenden
-Zusätzlich sind die Studierenden nach Abschluss des Moduls in der Lage, in Kleingrup-
-pen physikalische Probleme in der adäquaten Fachsprache zu diskutieren, sich gegen-
-seitig physikalische Zusammenhänge zu erklären und gemeinsam eine Lösung des
-Problems zu erarbeiten und zu bewerten.
-
-Fach "Physik 2":
+    lehrziele: `Fach "Physik 2":
 Die Studierenden erwerben ein umfassendes und vertieftes Verständnis der Mechanis-
 men des Wärmetransports und des baulichen Wärme- und Kälteschutzes und können
 die am Beispiel Gebäude erlernte universelle Methodik auf andere technische Systeme
@@ -804,7 +811,7 @@ lieren und Lösen von Massen- und Energiebilanzen an stationären und instation�
 Systemen ermöglicht ihnen die fundierte technische und wirtschaftliche Bewertung der
 Effizienz von Maßnahmen zur industriellen und privaten Energieeinsparung.
 Fachkompetenz:
-49Die Studierenden kennen und verstehen die Grundlagen und Mechanismen des statio-
+Die Studierenden kennen und verstehen die Grundlagen und Mechanismen des statio-
 nären und instationären Wärmetransport und können Massen- und Energiebilanzen
 aufstellen. Sie sind mit nationalen Regeln des energiesparenden Wärmeschutzes ver-
 traut. Sie lernen typische bauliche Lösungen kennen, wie die im Bereich des Wärme-
@@ -840,7 +847,7 @@ Schnittstellen mit zugehöriger Software....)
 entsprechend zu interpretieren
 3. Messergebnisse an einem physikalischen Modell zu evaluieren und Übereinst-
 immungen und Abweichung zu diskutieren und zu erklären
-504. Experimente nachvollziehbar zu protokollieren
+4. Experimente nachvollziehbar zu protokollieren
 5. statistische Messfehler zu berechnen und die Verlässlichkeit eines Messergeb-
 nisses anzugeben
 Vor allem versetzt das Modul die Studierenden in die Lage, physikalische Experimente

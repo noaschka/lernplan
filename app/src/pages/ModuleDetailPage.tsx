@@ -78,7 +78,10 @@ export default function ModuleDetailPage() {
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
             <StatusBadge status={modul.status} />
             <span>{modul.kuerzel}</span>
-            <span>&middot; Semester {modul.semesterIst ?? modul.semesterSoll}</span>
+            <span>&middot; Semester {modul.semesterSoll} (Plan)</span>
+            {modul.semesterIst != null && modul.semesterIst !== modul.semesterSoll && (
+              <span>&middot; tats&auml;chlich Semester {modul.semesterIst}</span>
+            )}
             <span>&middot; {modul.ects} ECTS</span>
           </div>
         </div>

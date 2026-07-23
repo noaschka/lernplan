@@ -19,7 +19,7 @@ export default function ModulePage() {
   const nachSemester = useMemo(() => {
     const gruppen = new Map<number, Modul[]>();
     gefiltert.forEach((m) => {
-      const sem = m.semesterIst ?? m.semesterSoll;
+      const sem = m.semesterSoll;
       if (!gruppen.has(sem)) gruppen.set(sem, []);
       gruppen.get(sem)!.push(m);
     });
@@ -130,6 +130,11 @@ export default function ModulePage() {
                         <button onClick={() => toggle(m.id)} className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 text-left">
                           <span className={`shrink-0 text-slate-300 transition-transform dark:text-slate-600 ${ist ? 'rotate-90' : ''}`}>&#9656;</span>
                           <span className="min-w-[220px] flex-1 font-semibold">{m.name}</span>
+                          {m.semesterIst != null && m.semesterIst !== m.semesterSoll && (
+                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950 dark:text-amber-400">
+                              tats. Sem. {m.semesterIst}
+                            </span>
+                          )}
                           <span className="text-xs text-slate-400">{m.ects} ECTS</span>
                           <span className="hidden text-xs text-slate-400 sm:inline">{m.pruefungsform || '–'}</span>
                           <StatusBadge status={m.status} />
