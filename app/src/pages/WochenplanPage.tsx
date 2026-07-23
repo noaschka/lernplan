@@ -3,12 +3,99 @@ import { v4 as uuid } from 'uuid';
 import { useStore } from '../store/useStore';
 import { montagDerWoche, tageDerWoche, wocheVerschieben } from '../utils/dates';
 import { inputClass } from '../components/ui/FormField';
+import type { Modul, WochenplanEintrag } from '../types';
 
 function minutenZuText(min: number) {
   if (!min) return '0m';
   const h = Math.floor(min / 60);
   const m = min % 60;
   return h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
+}
+
+interface TagSpalteProps {
+  tag: { iso: string; label: string; tagLabel: string };
+  heute: boolean;
+  eintraege: WochenplanEintrag[];
+  module: Modul[];
+  onHinzufuegen: (modulId: string, geplantMin: number) => void;
+  onIstZeitPlus: (eintrag: WochenplanEintrag, minuten: number) => void;
+  onLoeschen: (eintragId: string) => void;
+}
+
+function TagSpalte({ tag, heute, eintraege, module, onHinzufuegen, onIstZeitPlus, onLoeschen }: TagSpalteProps) {
+  const [modulId, setModulId] = useState(module[0]?.id ?? '');
+  const [geplantMin, setGeplantMin] = useState(30);
+
+  const tagSoll = eintraege.reduce((s, e) => s + e.geplantMin, 0);
+  const tagIst = eintraege.reduce((s, e) => s + e.tatsaechlichMin, 0);
+
+  return (
+    <div className={`flex min-h-[380px] flex-col p-3 ${heute ? 'bg-slate-50 dark:bg-slate-800/40' : ''}`}>
+      <div className="mb-2 border-b border-slate-100 pb-2 dark:border-slate-800">
+        <div className={`text-sm font-bold ${heute ? 'text-slate-900 dark:text-white' : ''}`}>
+          {tag.tagLabel} <span className="font-normal text-slate-400">{tag.label}</span>
+        </div>
+        {tagSoll > 0 && (
+          <div className="mt-0.5 text-[11px] text-slate-400">
+            {minutenZuText(tagIst)} / {minutenZuText(tagSoll)}
+          </div>
+        )}
+      </div>
+      <div className="flex-1 space-y-1.5">
+        {eintraege.map((e) => {
+          const mod = module.find((m) => m.id === e.modulId);
+          return (
+            <div key={e.id} className="rounded-lg bg-slate-50 px-2 py-1.5 text-xs dark:bg-slate-800/60">
+              <div className="truncate font-medium">{mod?.name ?? '–'}</div>
+              <div className="mt-0.5 flex items-center justify-between text-slate-400">
+                <span>
+                  {minutenZuText(e.tatsaechlichMin)}/{minutenZuText(e.geplantMin)}
+                </span>
+                <span className="flex items-center gap-1">
+                  <button
+                    onClick={() => onIstZeitPlus(e, 15)}
+                    className="rounded-full border border-slate-200 px-1.5 text-[10px] hover:border-slate-400 dark:border-slate-700"
+                    title="15 Min. Ist-Zeit hinzufügen"
+                  >
+                    +15m
+                  </button>
+                  <button onClick={() => onLoeschen(e.id)} className="px-0.5 hover:text-red-500">
+                    &times;
+                  </button>
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2 space-y-1.5 border-t border-slate-100 pt-2 dark:border-slate-800">
+        <select className={`${inputClass} !py-1 text-xs`} value={modulId} onChange={(e) => setModulId(e.target.value)}>
+          {module.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.kuerzel || m.name}
+            </option>
+          ))}
+        </select>
+        <div className="flex items-center gap-1.5">
+          <input
+            type="number"
+            min={0}
+            step={5}
+            title="Geplant (Min.)"
+            className={`${inputClass} !py-1 text-xs`}
+            value={geplantMin}
+            onChange={(e) => setGeplantMin(Number(e.target.value))}
+          />
+          <button
+            onClick={() => modulId && onHinzufuegen(modulId, geplantMin)}
+            className="shrink-0 rounded-lg bg-slate-900 px-2.5 py-1 text-xs font-semibold text-white dark:bg-white dark:text-slate-900"
+          >
+            +
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function WochenplanPage() {
@@ -22,27 +109,8 @@ export default function WochenplanPage() {
   const woche = wochenplaene.find((w) => w.woche === montag);
   const eintraege = woche?.eintraege ?? [];
 
-  const [form, setForm] = useState<{ tag: string; modulId: string; geplantMin: number; tatsaechlichMin: number }>({
-    tag: '',
-    modulId: module[0]?.id ?? '',
-    geplantMin: 30,
-    tatsaechlichMin: 0,
-  });
-
   const sollGesamt = eintraege.reduce((s, e) => s + e.geplantMin, 0);
   const istGesamt = eintraege.reduce((s, e) => s + e.tatsaechlichMin, 0);
-
-  function eintragen(tagIso: string) {
-    if (!form.modulId) return;
-    upsertEintrag(montag, {
-      id: uuid(),
-      modulId: form.modulId,
-      tag: tagIso,
-      geplantMin: form.geplantMin,
-      tatsaechlichMin: form.tatsaechlichMin,
-    });
-    setForm({ ...form, tag: '', geplantMin: 30, tatsaechlichMin: 0 });
-  }
 
   return (
     <div>
@@ -91,83 +159,20 @@ export default function WochenplanPage() {
       ) : (
         <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
           <div className="grid min-w-[980px] grid-cols-7 divide-x divide-slate-100 dark:divide-slate-800">
-            {tage.map((tag) => {
-              const tagEintraege = eintraege.filter((e) => e.tag === tag.iso);
-              const heute = tag.iso === new Date().toISOString().slice(0, 10);
-              const tagSoll = tagEintraege.reduce((s, e) => s + e.geplantMin, 0);
-              const tagIst = tagEintraege.reduce((s, e) => s + e.tatsaechlichMin, 0);
-              return (
-                <div key={tag.iso} className={`flex min-h-[380px] flex-col p-3 ${heute ? 'bg-slate-50 dark:bg-slate-800/40' : ''}`}>
-                  <div className="mb-2 border-b border-slate-100 pb-2 dark:border-slate-800">
-                    <div className={`text-sm font-bold ${heute ? 'text-slate-900 dark:text-white' : ''}`}>
-                      {tag.tagLabel} <span className="font-normal text-slate-400">{tag.label}</span>
-                    </div>
-                    {tagSoll > 0 && (
-                      <div className="mt-0.5 text-[11px] text-slate-400">
-                        {minutenZuText(tagIst)} / {minutenZuText(tagSoll)}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-1.5">
-                    {tagEintraege.map((e) => {
-                      const mod = module.find((m) => m.id === e.modulId);
-                      return (
-                        <div key={e.id} className="rounded-lg bg-slate-50 px-2 py-1.5 text-xs dark:bg-slate-800/60">
-                          <div className="truncate font-medium">{mod?.name ?? '–'}</div>
-                          <div className="mt-0.5 flex items-center justify-between text-slate-400">
-                            <span>
-                              {minutenZuText(e.tatsaechlichMin)}/{minutenZuText(e.geplantMin)}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <button
-                                onClick={() => upsertEintrag(montag, { ...e, tatsaechlichMin: e.tatsaechlichMin + 15 })}
-                                className="rounded-full border border-slate-200 px-1.5 text-[10px] hover:border-slate-400 dark:border-slate-700"
-                                title="15 Min. Ist-Zeit hinzufügen"
-                              >
-                                +15m
-                              </button>
-                              <button onClick={() => deleteEintrag(montag, e.id)} className="px-0.5 hover:text-red-500">
-                                &times;
-                              </button>
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-2 space-y-1.5 border-t border-slate-100 pt-2 dark:border-slate-800">
-                    <select
-                      className={`${inputClass} !py-1 text-xs`}
-                      value={form.modulId}
-                      onChange={(e) => setForm({ ...form, modulId: e.target.value })}
-                    >
-                      {module.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.kuerzel || m.name}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="number"
-                        min={0}
-                        step={5}
-                        title="Geplant (Min.)"
-                        className={`${inputClass} !py-1 text-xs`}
-                        value={form.geplantMin}
-                        onChange={(e) => setForm({ ...form, geplantMin: Number(e.target.value) })}
-                      />
-                      <button
-                        onClick={() => eintragen(tag.iso)}
-                        className="shrink-0 rounded-lg bg-slate-900 px-2.5 py-1 text-xs font-semibold text-white dark:bg-white dark:text-slate-900"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {tage.map((tag) => (
+              <TagSpalte
+                key={tag.iso}
+                tag={tag}
+                heute={tag.iso === new Date().toISOString().slice(0, 10)}
+                eintraege={eintraege.filter((e) => e.tag === tag.iso)}
+                module={module}
+                onHinzufuegen={(modulId, geplantMin) =>
+                  upsertEintrag(montag, { id: uuid(), modulId, tag: tag.iso, geplantMin, tatsaechlichMin: 0 })
+                }
+                onIstZeitPlus={(eintrag, minuten) => upsertEintrag(montag, { ...eintrag, tatsaechlichMin: eintrag.tatsaechlichMin + minuten })}
+                onLoeschen={(eintragId) => deleteEintrag(montag, eintragId)}
+              />
+            ))}
           </div>
         </div>
       )}
