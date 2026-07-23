@@ -10,6 +10,22 @@
     <meta name="apple-mobile-web-app-title" content="Studium-Tracker" />
     <link rel="apple-touch-icon" href="/lernplan/studium-app/pwa-192.png" />
     <title>Studium-Tracker</title>
+    <script>
+      // Single Page Apps for GitHub Pages: decode the redirect from 404.html
+      // https://github.com/rafgraph/spa-github-pages
+      (function (l) {
+        if (l.search[1] === '/') {
+          var decoded = l.search
+            .slice(1)
+            .split('&')
+            .map(function (s) {
+              return s.replace(/~and~/g, '&');
+            })
+            .join('?');
+          window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+        }
+      })(window.location);
+    </script>
     <script type="module" crossorigin src="/lernplan/studium-app/assets/index-CnEqYT-6.js"></script>
     <link rel="stylesheet" crossorigin href="/lernplan/studium-app/assets/index-DgoWecuM.css">
   <link rel="manifest" href="/lernplan/studium-app/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/lernplan/studium-app/registerSW.js"></script></head>
