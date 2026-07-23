@@ -9,7 +9,27 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Studium-Tracker" />
     <link rel="apple-touch-icon" href="/lernplan/studium-app/pwa-192.png" />
+    <link rel="manifest" href="/lernplan/studium-app/manifest.webmanifest" />
     <title>Studium-Tracker</title>
+    <script>
+      // One-time cleanup: this app no longer uses a Service Worker. Unregister
+      // any previously installed one and clear its caches so devices that
+      // installed the earlier PWA build don't get stuck on a stale/broken SW.
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          regs.forEach(function (reg) {
+            reg.unregister();
+          });
+        });
+      }
+      if ('caches' in window) {
+        caches.keys().then(function (keys) {
+          keys.forEach(function (key) {
+            caches.delete(key);
+          });
+        });
+      }
+    </script>
     <script>
       // Single Page Apps for GitHub Pages: decode the redirect from 404.html
       // https://github.com/rafgraph/spa-github-pages
@@ -26,9 +46,9 @@
         }
       })(window.location);
     </script>
-    <script type="module" crossorigin src="/lernplan/studium-app/assets/index-CnEqYT-6.js"></script>
-    <link rel="stylesheet" crossorigin href="/lernplan/studium-app/assets/index-DgoWecuM.css">
-  <link rel="manifest" href="/lernplan/studium-app/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/lernplan/studium-app/registerSW.js"></script></head>
+    <script type="module" crossorigin src="/lernplan/studium-app/assets/index-Be0-ZLLA.js"></script>
+    <link rel="stylesheet" crossorigin href="/lernplan/studium-app/assets/index-BWIcUDlY.css">
+  </head>
   <body>
     <div id="root"></div>
   </body>
