@@ -10,6 +10,7 @@ export default function ModuleDetailPage() {
   const navigate = useNavigate();
   const module = useStore((s) => s.module);
   const deleteModul = useStore((s) => s.deleteModul);
+  const updateModul = useStore((s) => s.updateModul);
   const addVersuch = useStore((s) => s.addVersuch);
   const deleteVersuch = useStore((s) => s.deleteVersuch);
 
@@ -17,6 +18,8 @@ export default function ModuleDetailPage() {
   const [neuDatum, setNeuDatum] = useState('');
   const [neuNote, setNeuNote] = useState('');
   const [neuBestanden, setNeuBestanden] = useState(true);
+  const [neuDokName, setNeuDokName] = useState('');
+  const [neuDokUrl, setNeuDokUrl] = useState('');
 
   if (!modul) {
     return (
@@ -43,6 +46,17 @@ export default function ModuleDetailPage() {
     setNeuDatum('');
     setNeuNote('');
     setNeuBestanden(true);
+  }
+
+  function dokumentHinzufuegen() {
+    if (!neuDokName.trim() || !neuDokUrl.trim()) return;
+    updateModul(modul!.id, { dokumente: [...modul!.dokumente, { name: neuDokName.trim(), url: neuDokUrl.trim() }] });
+    setNeuDokName('');
+    setNeuDokUrl('');
+  }
+
+  function dokumentEntfernen(index: number) {
+    updateModul(modul!.id, { dokumente: modul!.dokumente.filter((_, i) => i !== index) });
   }
 
   function loeschen() {
@@ -127,7 +141,53 @@ export default function ModuleDetailPage() {
         </div>
       )}
 
-      <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Dokumente</div>
+        {modul.dokumente.length ? (
+          <ul className="space-y-1.5">
+            {modul.dokumente.map((d, i) => (
+              <li key={i} className="flex items-center justify-between gap-2 text-sm">
+                <a href={d.url} target="_blank" rel="noreferrer" className="truncate text-slate-700 hover:underline dark:text-slate-200">
+                  📄 {d.name}
+                </a>
+                <button onClick={() => dokumentEntfernen(i)} className="shrink-0 text-xs text-slate-400 hover:text-red-500">
+                  Entfernen
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-slate-400">Noch keine Skripte/Zusammenfassungen verlinkt.</p>
+        )}
+        <div className="mt-4 flex flex-wrap items-end gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+          <label className="flex-1 text-sm">
+            <span className="mb-1 block text-xs font-medium text-slate-500">Name</span>
+            <input
+              className={inputClass}
+              placeholder="z.B. Skript Kapitel 1"
+              value={neuDokName}
+              onChange={(e) => setNeuDokName(e.target.value)}
+            />
+          </label>
+          <label className="flex-1 text-sm">
+            <span className="mb-1 block text-xs font-medium text-slate-500">Link / Dateipfad</span>
+            <input
+              className={inputClass}
+              placeholder="https://... oder Dateiname"
+              value={neuDokUrl}
+              onChange={(e) => setNeuDokUrl(e.target.value)}
+            />
+          </label>
+          <button
+            onClick={dokumentHinzufuegen}
+            className="shrink-0 rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900"
+          >
+            + Verlinken
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
         <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Versuchs-Historie</div>
         {modul.versuche.length ? (
           <table className="w-full text-left text-sm">

@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/offene-module', label: 'Offene Module' },
   { to: '/noten', label: 'ECTS/Noten' },
   { to: '/wochenplan', label: 'Wochenplan' },
+  { to: '/wiederholungen', label: 'Wiederholungen' },
   { to: '/einstellungen', label: 'Einstellungen' },
 ];
 

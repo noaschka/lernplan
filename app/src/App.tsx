@@ -9,6 +9,7 @@ import OffeneModulePage from './pages/OffeneModulePage';
 import NotenPage from './pages/NotenPage';
 import LernplanPage from './pages/LernplanPage';
 import WochenplanPage from './pages/WochenplanPage';
+import WiederholungenPage from './pages/WiederholungenPage';
 import SettingsPage from './pages/SettingsPage';
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="offene-module" element={<OffeneModulePage />} />
         <Route path="noten" element={<NotenPage />} />
         <Route path="wochenplan" element={<WochenplanPage />} />
+        <Route path="wiederholungen" element={<WiederholungenPage />} />
         <Route path="einstellungen" element={<SettingsPage />} />
       </Route>
     </Routes>

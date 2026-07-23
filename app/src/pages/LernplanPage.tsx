@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { dringlichkeit, formatiereDatum, tageBis } from '../utils/dates';
+import { dringlichkeit, formatiereDatum, heuteISO, tageBis } from '../utils/dates';
+import { naechsteWiederholungBerechnen } from '../utils/spacedRepetition';
 import UrgencyDot from '../components/ui/UrgencyDot';
 import { inputClass } from '../components/ui/FormField';
 
@@ -9,6 +10,7 @@ export default function LernplanPage() {
   const { modulId } = useParams();
   const module = useStore((s) => s.module);
   const lernplaene = useStore((s) => s.lernplaene);
+  const intervalle = useStore((s) => s.settings.spacedRepetitionIntervalleTage);
   const addThema = useStore((s) => s.addThema);
   const updateThema = useStore((s) => s.updateThema);
   const deleteThema = useStore((s) => s.deleteThema);
@@ -85,15 +87,25 @@ export default function LernplanPage() {
                   type="checkbox"
                   className="h-4 w-4"
                   checked={t.erledigt}
-                  onChange={(e) =>
-                    updateThema(modul.id, t.id, {
-                      erledigt: e.target.checked,
-                      erledigtAm: e.target.checked ? new Date().toISOString().slice(0, 10) : null,
-                    })
-                  }
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      const erledigtAm = heuteISO();
+                      updateThema(modul.id, t.id, {
+                        erledigt: true,
+                        erledigtAm,
+                        wiederholungen: [],
+                        naechsteWiederholung: naechsteWiederholungBerechnen({ erledigtAm, wiederholungen: [] }, intervalle),
+                      });
+                    } else {
+                      updateThema(modul.id, t.id, { erledigt: false, erledigtAm: null, wiederholungen: [], naechsteWiederholung: null });
+                    }
+                  }}
                 />
                 <span className={`flex-1 text-sm ${t.erledigt ? 'text-slate-400 line-through' : ''}`}>{t.titel}</span>
                 {t.erledigtAm && <span className="text-xs text-slate-400">{formatiereDatum(t.erledigtAm)}</span>}
+                {t.naechsteWiederholung && (
+                  <span className="text-xs text-amber-600 dark:text-amber-400">↻ {formatiereDatum(t.naechsteWiederholung)}</span>
+                )}
                 <button onClick={() => deleteThema(modul.id, t.id)} className="text-xs text-slate-400 hover:text-red-500">
                   Entfernen
                 </button>
