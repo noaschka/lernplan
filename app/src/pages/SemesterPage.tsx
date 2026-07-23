@@ -5,6 +5,7 @@ import { formatiereDatum } from '../utils/dates';
 import { aktuellesSollSemester } from '../utils/semester';
 import { inputClass } from '../components/ui/FormField';
 import StatusBadge from '../components/ui/StatusBadge';
+import IstSemesterBadge from '../components/ui/IstSemesterBadge';
 import type { Semester } from '../types';
 
 const EMPTY: Semester = { nummer: 1, start: '', ende: '', ectsSoll: 30 };
@@ -202,11 +203,7 @@ export default function SemesterPage() {
                   <div key={m.id} className="flex items-center justify-between gap-2 py-2 text-sm">
                     <span className="flex items-center gap-2">
                       {m.name}
-                      {m.semesterIst != null && m.semesterIst !== m.semesterSoll && (
-                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950 dark:text-amber-400">
-                          tats. Sem. {m.semesterIst}
-                        </span>
-                      )}
+                      {m.semesterIst != null && m.semesterIst !== m.semesterSoll && <IstSemesterBadge semesterIst={m.semesterIst} />}
                     </span>
                     <div className="flex items-center gap-3">
                       <span className="text-slate-400">{m.ects} ECTS</span>

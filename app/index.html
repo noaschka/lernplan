@@ -9,7 +9,27 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Studium-Tracker" />
     <link rel="apple-touch-icon" href="/pwa-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <title>Studium-Tracker</title>
+    <script>
+      // One-time cleanup: this app no longer uses a Service Worker. Unregister
+      // any previously installed one and clear its caches so devices that
+      // installed the earlier PWA build don't get stuck on a stale/broken SW.
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          regs.forEach(function (reg) {
+            reg.unregister();
+          });
+        });
+      }
+      if ('caches' in window) {
+        caches.keys().then(function (keys) {
+          keys.forEach(function (key) {
+            caches.delete(key);
+          });
+        });
+      }
+    </script>
     <script>
       // Single Page Apps for GitHub Pages: decode the redirect from 404.html
       // https://github.com/rafgraph/spa-github-pages
