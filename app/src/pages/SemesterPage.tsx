@@ -19,9 +19,7 @@ export default function SemesterPage() {
   const [editing, setEditing] = useState(false);
 
   const semesterNummern = useMemo(
-    () => [...new Set([...module.map((m) => m.semesterIst ?? m.semesterSoll), ...semesterListe.map((s) => s.nummer)])].sort(
-      (a, b) => a - b,
-    ),
+    () => [...new Set([...module.map((m) => m.semesterSoll), ...semesterListe.map((s) => s.nummer)])].sort((a, b) => a - b),
     [module, semesterListe],
   );
 
@@ -169,7 +167,7 @@ export default function SemesterPage() {
 
       <div className="mt-6 space-y-4">
         {semesterNummern.map((nr) => {
-          const semModule = module.filter((m) => (m.semesterIst ?? m.semesterSoll) === nr);
+          const semModule = module.filter((m) => m.semesterSoll === nr);
           const semMeta = semesterListe.find((s) => s.nummer === nr);
           const { schnitt } = berechneNotenschnitt(semModule);
           const erreicht = ectsErreicht(semModule);
@@ -202,7 +200,14 @@ export default function SemesterPage() {
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {semModule.map((m) => (
                   <div key={m.id} className="flex items-center justify-between gap-2 py-2 text-sm">
-                    <span>{m.name}</span>
+                    <span className="flex items-center gap-2">
+                      {m.name}
+                      {m.semesterIst != null && m.semesterIst !== m.semesterSoll && (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:bg-amber-950 dark:text-amber-400">
+                          tats. Sem. {m.semesterIst}
+                        </span>
+                      )}
+                    </span>
                     <div className="flex items-center gap-3">
                       <span className="text-slate-400">{m.ects} ECTS</span>
                       <StatusBadge status={m.status} />
