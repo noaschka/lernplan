@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import StatusBadge from '../components/ui/StatusBadge';
+import FormattedText from '../components/ui/FormattedText';
+import IstSemesterBadge from '../components/ui/IstSemesterBadge';
 import { inputClass } from '../components/ui/FormField';
 import { formatiereDatum } from '../utils/dates';
 
@@ -79,9 +81,7 @@ export default function ModuleDetailPage() {
             <StatusBadge status={modul.status} />
             <span>{modul.kuerzel}</span>
             <span>&middot; Semester {modul.semesterSoll} (Plan)</span>
-            {modul.semesterIst != null && modul.semesterIst !== modul.semesterSoll && (
-              <span>&middot; tats&auml;chlich Semester {modul.semesterIst}</span>
-            )}
+            {modul.semesterIst != null && modul.semesterIst !== modul.semesterSoll && <IstSemesterBadge semesterIst={modul.semesterIst} />}
             <span>&middot; {modul.ects} ECTS</span>
           </div>
         </div>
@@ -118,14 +118,14 @@ export default function ModuleDetailPage() {
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {modul.inhalte && (
             <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Inhalte</div>
-              <p className="whitespace-pre-wrap text-sm">{modul.inhalte}</p>
+              <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Inhalte</div>
+              <FormattedText text={modul.inhalte} />
             </div>
           )}
           {modul.lehrziele && (
             <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Lehrziele</div>
-              <p className="whitespace-pre-wrap text-sm">{modul.lehrziele}</p>
+              <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Lehrziele</div>
+              <FormattedText text={modul.lehrziele} />
             </div>
           )}
         </div>
