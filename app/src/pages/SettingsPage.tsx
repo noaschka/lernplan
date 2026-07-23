@@ -90,7 +90,14 @@ export default function SettingsPage() {
         </div>
       </form>
 
-      <div className="mt-6 max-w-lg rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-900">
+      <div className="mt-6 max-w-lg rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
+        Der Modulkatalog wurde automatisiert aus dem offiziellen Modulhandbuch extrahiert. Bei den
+        Wahlpflichtfächern (W-19, W-20, W-30&ndash;W-35) sind mehr Module gelistet, als tatsächlich
+        Pflicht sind &ndash; bitte in der Modulübersicht die für dich nicht relevanten Wahlmodule
+        löschen, damit ECTS-Fortschritt und Notenschnitt stimmen.
+      </div>
+
+      <div className="mt-4 max-w-lg rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-900">
         Export/Import als JSON-Backup folgt in Phase 4.
       </div>
     </div>

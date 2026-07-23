@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage';
 import SemesterPage from './pages/SemesterPage';
 import ModulePage from './pages/ModulePage';
 import ModuleDetailPage from './pages/ModuleDetailPage';
+import ModulFormPage from './pages/ModulFormPage';
 import OffeneModulePage from './pages/OffeneModulePage';
 import NotenPage from './pages/NotenPage';
 import LernplanPage from './pages/LernplanPage';
@@ -17,7 +18,9 @@ export default function App() {
         <Route index element={<DashboardPage />} />
         <Route path="semester" element={<SemesterPage />} />
         <Route path="module" element={<ModulePage />} />
+        <Route path="module/neu" element={<ModulFormPage />} />
         <Route path="module/:modulId" element={<ModuleDetailPage />} />
+        <Route path="module/:modulId/bearbeiten" element={<ModulFormPage />} />
         <Route path="module/:modulId/lernplan" element={<LernplanPage />} />
         <Route path="offene-module" element={<OffeneModulePage />} />
         <Route path="noten" element={<NotenPage />} />
