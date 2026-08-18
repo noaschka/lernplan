@@ -39,8 +39,9 @@ export default function ModuleDetailPage() {
     .filter(Boolean);
 
   function versuchHinzufuegen() {
+    const naechsteNr = Math.max(0, ...modul!.versuche.map((v) => v.versuchNr)) + 1;
     addVersuch(modul!.id, {
-      versuchNr: modul!.versuche.length + 1,
+      versuchNr: naechsteNr,
       datum: neuDatum || null,
       note: neuNote ? Number(neuNote) : null,
       bestanden: neuBestanden,
@@ -112,82 +113,6 @@ export default function ModuleDetailPage() {
         <InfoCard label="Workload" value={`${modul.workloadGesamt} Std.`} />
         <InfoCard label="Prüfungsform" value={modul.pruefungsform || '–'} />
         <InfoCard label="Prüfungstermin" value={formatiereDatum(modul.pruefungstermin)} />
-      </div>
-
-      {(modul.inhalte || modul.lehrziele) && (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          {modul.inhalte && (
-            <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Inhalte</div>
-              <FormattedText text={modul.inhalte} />
-            </div>
-          )}
-          {modul.lehrziele && (
-            <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-              <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Lehrziele</div>
-              <FormattedText text={modul.lehrziele} />
-            </div>
-          )}
-        </div>
-      )}
-
-      {voraussetzungsNamen.length > 0 && (
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-          <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Voraussetzungen</div>
-          <div className="flex flex-wrap gap-2 text-sm">
-            {voraussetzungsNamen.map((n) => (
-              <span key={n} className="rounded-full bg-slate-100 px-2.5 py-0.5 dark:bg-slate-800">
-                {n}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-        <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Dokumente</div>
-        {modul.dokumente.length ? (
-          <ul className="space-y-1.5">
-            {modul.dokumente.map((d, i) => (
-              <li key={i} className="flex items-center justify-between gap-2 text-sm">
-                <a href={d.url} target="_blank" rel="noreferrer" className="truncate text-slate-700 hover:underline dark:text-slate-200">
-                  📄 {d.name}
-                </a>
-                <button onClick={() => dokumentEntfernen(i)} className="shrink-0 text-xs text-slate-400 hover:text-red-500">
-                  Entfernen
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-slate-400">Noch keine Skripte/Zusammenfassungen verlinkt.</p>
-        )}
-        <div className="mt-4 flex flex-wrap items-end gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
-          <label className="flex-1 text-sm">
-            <span className="mb-1 block text-xs font-medium text-slate-500">Name</span>
-            <input
-              className={inputClass}
-              placeholder="z.B. Skript Kapitel 1"
-              value={neuDokName}
-              onChange={(e) => setNeuDokName(e.target.value)}
-            />
-          </label>
-          <label className="flex-1 text-sm">
-            <span className="mb-1 block text-xs font-medium text-slate-500">Link / Dateipfad</span>
-            <input
-              className={inputClass}
-              placeholder="https://... oder Dateiname"
-              value={neuDokUrl}
-              onChange={(e) => setNeuDokUrl(e.target.value)}
-            />
-          </label>
-          <button
-            onClick={dokumentHinzufuegen}
-            className="shrink-0 rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900"
-          >
-            + Verlinken
-          </button>
-        </div>
       </div>
 
       <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
@@ -264,6 +189,82 @@ export default function ModuleDetailPage() {
           </button>
         </div>
       </div>
+
+      <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+        <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Dokumente</div>
+        {modul.dokumente.length ? (
+          <ul className="space-y-1.5">
+            {modul.dokumente.map((d, i) => (
+              <li key={i} className="flex items-center justify-between gap-2 text-sm">
+                <a href={d.url} target="_blank" rel="noreferrer" className="truncate text-slate-700 hover:underline dark:text-slate-200">
+                  📄 {d.name}
+                </a>
+                <button onClick={() => dokumentEntfernen(i)} className="shrink-0 text-xs text-slate-400 hover:text-red-500">
+                  Entfernen
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-slate-400">Noch keine Skripte/Zusammenfassungen verlinkt.</p>
+        )}
+        <div className="mt-4 flex flex-wrap items-end gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+          <label className="flex-1 text-sm">
+            <span className="mb-1 block text-xs font-medium text-slate-500">Name</span>
+            <input
+              className={inputClass}
+              placeholder="z.B. Skript Kapitel 1"
+              value={neuDokName}
+              onChange={(e) => setNeuDokName(e.target.value)}
+            />
+          </label>
+          <label className="flex-1 text-sm">
+            <span className="mb-1 block text-xs font-medium text-slate-500">Link / Dateipfad</span>
+            <input
+              className={inputClass}
+              placeholder="https://... oder Dateiname"
+              value={neuDokUrl}
+              onChange={(e) => setNeuDokUrl(e.target.value)}
+            />
+          </label>
+          <button
+            onClick={dokumentHinzufuegen}
+            className="shrink-0 rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900"
+          >
+            + Verlinken
+          </button>
+        </div>
+      </div>
+
+      {voraussetzungsNamen.length > 0 && (
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Voraussetzungen</div>
+          <div className="flex flex-wrap gap-2 text-sm">
+            {voraussetzungsNamen.map((n) => (
+              <span key={n} className="rounded-full bg-slate-100 px-2.5 py-0.5 dark:bg-slate-800">
+                {n}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {(modul.inhalte || modul.lehrziele) && (
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {modul.inhalte && (
+            <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+              <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Inhalte</div>
+              <FormattedText text={modul.inhalte} />
+            </div>
+          )}
+          {modul.lehrziele && (
+            <div className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+              <div className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">Lehrziele</div>
+              <FormattedText text={modul.lehrziele} />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
