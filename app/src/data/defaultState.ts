@@ -1,5 +1,6 @@
 import type { AppState, Modul } from '../types';
 import { MODUL_KATALOG_WIW_THD } from './moduleSeed';
+import { STUNDENPLAN_WIW5_WS2627 } from './stundenplanSeed';
 
 function katalogAlsModule(): Modul[] {
   return MODUL_KATALOG_WIW_THD.map((m) => ({
@@ -21,6 +22,7 @@ export function defaultState(): AppState {
     lernplaene: [],
     wochenplaene: [],
     semester: [],
+    stundenplan: STUNDENPLAN_WIW5_WS2627,
     settings: {
       studiengang: 'Wirtschaftsingenieurwesen',
       hochschule: 'TH Deggendorf',
@@ -28,6 +30,7 @@ export function defaultState(): AppState {
       regelstudienzeitEnde: null,
       zielschnitt: null,
       spacedRepetitionIntervalleTage: [1, 3, 7, 14, 30],
+      abWochen: { aUngerade: true, labelA: 'mit Business Simulation', labelB: 'Dienstag frei' },
     },
   };
 }

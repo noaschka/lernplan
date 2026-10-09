@@ -55,15 +55,32 @@ export interface Lernplan {
 
 export interface WochenplanEintrag {
   id: string;
-  modulId: string;
+  modulId: string | null;
   tag: string;
   geplantMin: number;
   tatsaechlichMin: number;
+  blockId?: string;
 }
 
 export interface Wochenplan {
   woche: string;
   eintraege: WochenplanEintrag[];
+}
+
+export type BlockArt = 'lernblock' | 'vorlesung' | 'frei';
+
+export interface StundenplanBlock {
+  id: string;
+  wochentag: number;
+  start: string;
+  ende: string;
+  art: BlockArt;
+  titel: string;
+  kurz: string;
+  modulId: string | null;
+  wochen: 'AB' | 'A' | 'B';
+  notiz: string;
+  quelle: 'manuell' | 'import';
 }
 
 export interface Semester {
@@ -73,6 +90,12 @@ export interface Semester {
   ectsSoll: number;
 }
 
+export interface AbWochenSettings {
+  aUngerade: boolean;
+  labelA: string;
+  labelB: string;
+}
+
 export interface Settings {
   studiengang: string;
   hochschule: string;
@@ -80,6 +103,7 @@ export interface Settings {
   regelstudienzeitEnde: string | null;
   zielschnitt: number | null;
   spacedRepetitionIntervalleTage: number[];
+  abWochen: AbWochenSettings;
 }
 
 export interface AppState {
@@ -87,5 +111,6 @@ export interface AppState {
   lernplaene: Lernplan[];
   wochenplaene: Wochenplan[];
   semester: Semester[];
+  stundenplan: StundenplanBlock[];
   settings: Settings;
 }
