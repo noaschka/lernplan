@@ -16,7 +16,22 @@ import {
 } from '../utils/stundenplan';
 import type { Modul, StundenplanBlock, WochenplanEintrag } from '../types';
 
-const PX_PRO_MIN = 1.1;
+const LG_QUERY = '(min-width: 1024px)';
+const PX_PRO_MIN_DESKTOP = 1.1;
+const PX_PRO_MIN_MOBIL = 0.7;
+const ACHSE_BREITE_DESKTOP = 36;
+const ACHSE_BREITE_MOBIL = 28;
+
+function useIstDesktop() {
+  const [istDesktop, setIstDesktop] = useState(() => typeof window !== 'undefined' && window.matchMedia(LG_QUERY).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(LG_QUERY);
+    const handler = (e: MediaQueryListEvent) => setIstDesktop(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return istDesktop;
+}
 
 function minutenZuText(min: number) {
   if (!min) return '0m';
@@ -27,16 +42,16 @@ function minutenZuText(min: number) {
 
 const ART_FARBEN: Record<StundenplanBlock['art'], { basis: string; erledigt: string }> = {
   lernblock: {
-    basis: 'bg-amber-300 border-amber-400 text-amber-950 dark:bg-amber-500/80 dark:border-amber-400 dark:text-white',
-    erledigt: 'bg-slate-900 border-slate-900 text-amber-400 dark:bg-slate-950 dark:border-slate-800 dark:text-amber-300',
+    basis: 'bg-amber-400 text-slate-900',
+    erledigt: 'bg-slate-900 text-amber-400 dark:bg-slate-100 dark:text-slate-900',
   },
   vorlesung: {
-    basis: 'bg-slate-200 border-slate-300 text-slate-700 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100',
-    erledigt: 'bg-slate-200 border-slate-300 text-slate-700 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100',
+    basis: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100',
+    erledigt: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100',
   },
   frei: {
-    basis: 'bg-emerald-100 border-emerald-200 text-emerald-800 dark:bg-emerald-900/40 dark:border-emerald-800 dark:text-emerald-200',
-    erledigt: 'bg-emerald-100 border-emerald-200 text-emerald-800 dark:bg-emerald-900/40 dark:border-emerald-800 dark:text-emerald-200',
+    basis: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200',
+    erledigt: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200',
   },
 };
 
@@ -46,13 +61,28 @@ const ART_LABEL: Record<StundenplanBlock['art'], string> = {
   frei: 'Frei',
 };
 
-function Zeitachse({ startMin, endeMin }: { startMin: number; endeMin: number }) {
+function Zeitachse({
+  startMin,
+  endeMin,
+  pxProMin,
+  breite,
+  kompakt,
+}: {
+  startMin: number;
+  endeMin: number;
+  pxProMin: number;
+  breite: number;
+  kompakt: boolean;
+}) {
   const stunden: number[] = [];
   for (let m = Math.ceil(startMin / 60) * 60; m <= endeMin; m += 60) stunden.push(m);
   return (
-    <div className="relative w-9 shrink-0 text-right text-[10px] text-slate-400" style={{ height: (endeMin - startMin) * PX_PRO_MIN }}>
+    <div
+      className={`relative shrink-0 text-right ${kompakt ? 'text-[9px]' : 'text-[10px]'} text-slate-400`}
+      style={{ width: breite, height: (endeMin - startMin) * pxProMin }}
+    >
       {stunden.map((m) => (
-        <div key={m} className="absolute right-1 -translate-y-1/2" style={{ top: (m - startMin) * PX_PRO_MIN }}>
+        <div key={m} className="absolute right-0 -translate-y-1/2 whitespace-nowrap" style={{ top: (m - startMin) * pxProMin }}>
           {String(Math.floor(m / 60)).padStart(2, '0')}:00
         </div>
       ))}
@@ -60,83 +90,95 @@ function Zeitachse({ startMin, endeMin }: { startMin: number; endeMin: number })
   );
 }
 
-interface TagGridSpalteProps {
+interface TagKopfProps {
   tagLabel: string;
   datumLabel: string;
+  ausgewaehlt: boolean;
+  heute: boolean;
+  onAuswaehlen: () => void;
+}
+
+function TagKopf({ tagLabel, datumLabel, ausgewaehlt, heute, onAuswaehlen }: TagKopfProps) {
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onAuswaehlen}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onAuswaehlen();
+        }
+      }}
+      className={`flex min-h-11 w-full cursor-pointer flex-col items-center justify-center border-b px-1 py-1 text-center dark:border-slate-800 ${
+        ausgewaehlt
+          ? 'border-slate-900 bg-slate-900 dark:border-white dark:bg-white'
+          : `border-slate-100 ${heute ? 'bg-slate-50 dark:bg-slate-800/40' : ''}`
+      }`}
+    >
+      <div
+        className={`text-xs font-bold ${
+          ausgewaehlt ? 'text-white dark:text-slate-900' : heute ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'
+        }`}
+      >
+        {tagLabel}
+      </div>
+      <div className={`text-[10px] ${ausgewaehlt ? 'text-white/70 dark:text-slate-900/70' : 'text-slate-400'}`}>{datumLabel}</div>
+    </div>
+  );
+}
+
+interface TagRasterKoerperProps {
   bloecke: StundenplanBlock[];
   startMin: number;
   endeMin: number;
-  ausgewaehlt: boolean;
   heute: boolean;
   aktuelleZeitMin: number | null;
-  onAuswaehlen: () => void;
   erledigtIds: Set<string>;
   kompakt: boolean;
+  pxProMin: number;
 }
 
-function TagGridSpalte({
-  tagLabel,
-  datumLabel,
-  bloecke,
-  startMin,
-  endeMin,
-  ausgewaehlt,
-  heute,
-  aktuelleZeitMin,
-  onAuswaehlen,
-  erledigtIds,
-  kompakt,
-}: TagGridSpalteProps) {
-  const hoehe = (endeMin - startMin) * PX_PRO_MIN;
+function TagRasterKoerper({ bloecke, startMin, endeMin, heute, aktuelleZeitMin, erledigtIds, kompakt, pxProMin }: TagRasterKoerperProps) {
+  const hoehe = (endeMin - startMin) * pxProMin;
   return (
-    <button
-      type="button"
-      onClick={onAuswaehlen}
-      className={`flex w-full flex-col text-left ${ausgewaehlt ? 'ring-2 ring-inset ring-slate-900 dark:ring-white' : ''}`}
-    >
-      <div className={`border-b border-slate-100 px-1.5 py-1.5 text-center dark:border-slate-800 ${heute ? 'bg-slate-50 dark:bg-slate-800/40' : ''}`}>
-        <div className={`text-xs font-bold ${heute ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>{tagLabel}</div>
-        <div className="text-[10px] text-slate-400">{datumLabel}</div>
-      </div>
-      <div className={`relative ${heute ? 'bg-slate-50/60 dark:bg-slate-800/20' : ''}`} style={{ height: hoehe }}>
-        {bloecke.map((b) => {
-          const top = (blockStartMin(b) - startMin) * PX_PRO_MIN;
-          const h = Math.max(blockDauerMin(b) * PX_PRO_MIN, 16);
-          const erledigt = erledigtIds.has(b.id);
-          const haken = erledigt && b.art === 'lernblock';
-          const farben = erledigt ? ART_FARBEN[b.art].erledigt : ART_FARBEN[b.art].basis;
-          return (
-            <div
-              key={b.id}
-              lang="de"
-              className={`absolute inset-x-0.5 z-0 rounded border px-1 py-0.5 text-[9px] leading-tight break-words [hyphens:auto] ${farben}`}
-              style={{ top, height: h }}
-              title={`${b.titel} · ${b.start}–${b.ende}`}
-            >
-              {kompakt ? (
-                <div className="font-semibold">
+    <div className={`relative w-full ${heute ? 'bg-slate-50/60 dark:bg-slate-800/20' : ''}`} style={{ height: hoehe }}>
+      {bloecke.map((b) => {
+        const top = (blockStartMin(b) - startMin) * pxProMin;
+        const h = Math.max(blockDauerMin(b) * pxProMin, 16);
+        const erledigt = erledigtIds.has(b.id);
+        const haken = erledigt && b.art === 'lernblock';
+        const farben = erledigt ? ART_FARBEN[b.art].erledigt : ART_FARBEN[b.art].basis;
+        return (
+          <div
+            key={b.id}
+            className={`absolute inset-x-0.5 z-0 rounded px-1 py-0.5 text-[9px] leading-tight ${farben}`}
+            style={{ top, height: h }}
+            title={`${b.titel} · ${b.start}–${b.ende}`}
+          >
+            {kompakt ? (
+              <div className="truncate text-[11px] font-semibold">
+                {haken && '✓ '}
+                {b.kurz || b.titel}
+              </div>
+            ) : (
+              <>
+                <div lang="de" className="break-words font-semibold [hyphens:auto]">
                   {haken && '✓ '}
-                  {b.kurz || b.titel}
+                  {b.titel}
                 </div>
-              ) : (
-                <>
-                  <div className="font-semibold">
-                    {haken && '✓ '}
-                    {b.titel}
-                  </div>
-                  <div className="opacity-80">
-                    {b.start}&ndash;{b.ende}
-                  </div>
-                </>
-              )}
-            </div>
-          );
-        })}
-        {heute && aktuelleZeitMin != null && aktuelleZeitMin >= startMin && aktuelleZeitMin <= endeMin && (
-          <div className="absolute inset-x-0 z-10 border-t-2 border-red-500" style={{ top: (aktuelleZeitMin - startMin) * PX_PRO_MIN }} />
-        )}
-      </div>
-    </button>
+                <div className="opacity-80">
+                  {b.start}&ndash;{b.ende}
+                </div>
+              </>
+            )}
+          </div>
+        );
+      })}
+      {heute && aktuelleZeitMin != null && aktuelleZeitMin >= startMin && aktuelleZeitMin <= endeMin && (
+        <div className="absolute inset-x-0 z-10 border-t-2 border-red-500" style={{ top: (aktuelleZeitMin - startMin) * pxProMin }} />
+      )}
+    </div>
   );
 }
 
@@ -197,7 +239,7 @@ function TagDetailPanel({
               return (
                 <div
                   key={b.id}
-                  className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm ${
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm ${
                     erledigt ? ART_FARBEN[b.art].erledigt : ART_FARBEN[b.art].basis
                   }`}
                 >
@@ -214,7 +256,7 @@ function TagDetailPanel({
                       onClick={() => onToggleBlock(b)}
                       className={`flex h-11 min-w-[44px] shrink-0 items-center justify-center rounded-lg border px-3 text-xs font-semibold ${
                         erledigt
-                          ? 'border-amber-400/30 bg-black/20 text-amber-300'
+                          ? 'border-current/30 bg-black/10 text-current dark:bg-white/20'
                           : 'border-slate-300 bg-white text-slate-600 hover:border-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
                       }`}
                     >
@@ -308,6 +350,10 @@ export default function WochenplanPage() {
   const deleteEintrag = useStore((s) => s.deleteEintrag);
   const toggleBlockErledigt = useStore((s) => s.toggleBlockErledigt);
 
+  const istDesktop = useIstDesktop();
+  const pxProMin = istDesktop ? PX_PRO_MIN_DESKTOP : PX_PRO_MIN_MOBIL;
+  const achsenBreite = istDesktop ? ACHSE_BREITE_DESKTOP : ACHSE_BREITE_MOBIL;
+
   const [montag, setMontag] = useState(montagDerWoche());
   const [ausgewaehlterTag, setAusgewaehlterTag] = useState<string | null>(null);
   const [jetzt, setJetzt] = useState(() => new Date());
@@ -354,32 +400,32 @@ export default function WochenplanPage() {
         Stundenplan, feste Lernblöcke und manuelle Lernzeit mit Soll/Ist-Abgleich.
       </p>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => setMontag(wocheVerschieben(montag, -1))}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-700"
-          >
-            &larr;
-          </button>
-          <span className="text-sm font-semibold">
-            {tage[0].label}&ndash;{tage[6].label}
-          </span>
-          <button
-            onClick={() => setMontag(wocheVerschieben(montag, 1))}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-700"
-          >
-            &rarr;
-          </button>
-          <button onClick={() => setMontag(montagDerWoche())} className="text-xs text-slate-400 hover:text-slate-900 dark:hover:text-white">
-            Heute
-          </button>
-          <span className="text-xs text-slate-400">
-            KW {kalenderwoche(montag)}, Woche {typ}, {typLabel}
-          </span>
-        </div>
-        <div className="flex flex-col gap-1 text-sm">
-          <div className="flex gap-4">
+      <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setMontag(wocheVerschieben(montag, -1))}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-700"
+            >
+              &larr;
+            </button>
+            <span className="text-sm font-semibold">
+              {tage[0].label}&ndash;{tage[6].label}
+            </span>
+            <button
+              onClick={() => setMontag(wocheVerschieben(montag, 1))}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-700"
+            >
+              &rarr;
+            </button>
+            <button onClick={() => setMontag(montagDerWoche())} className="text-xs text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              Heute
+            </button>
+            <span className="text-xs text-slate-400">
+              KW {kalenderwoche(montag)}, Woche {typ}, {typLabel}
+            </span>
+          </div>
+          <div className="flex gap-4 text-sm">
             <span>
               <span className="text-slate-400">Soll: </span>
               <strong>{minutenZuText(sollGesamt)}</strong>
@@ -391,72 +437,50 @@ export default function WochenplanPage() {
               </strong>
             </span>
           </div>
-          <div className="h-1.5 w-40 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-            <div
-              className="h-full bg-emerald-500"
-              style={{ width: `${sollGesamt > 0 ? Math.min(100, (istGesamt / sollGesamt) * 100) : 0}%` }}
-            />
-          </div>
+        </div>
+        <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+          <div
+            className="h-full bg-emerald-500"
+            style={{ width: `${sollGesamt > 0 ? Math.min(100, (istGesamt / sollGesamt) * 100) : 0}%` }}
+          />
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-1.5 lg:hidden">
-        {aktiveTage.map((tag) => (
-          <button
-            key={tag.iso}
-            onClick={() => setAusgewaehlterTag(tag.iso)}
-            className={`flex h-11 flex-col items-center justify-center rounded-lg px-3 text-xs font-semibold ${
-              tag.iso === ausgewaehlteTagIso
-                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                : 'border border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300'
-            }`}
-          >
-            <span>{tag.tagLabel}</span>
-            <span className="text-[10px] font-normal opacity-70">{tag.label}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-2 flex flex-col gap-4 lg:flex-row">
+      <div className="mt-4 flex flex-col gap-4 lg:flex-row">
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 lg:flex-[2]">
-          <div className="hidden lg:flex">
-            <Zeitachse startMin={startMin} endeMin={endeMin} />
+          <div className="flex">
+            <div style={{ width: achsenBreite }} className="shrink-0" />
             <div className="flex flex-1 divide-x divide-slate-100 dark:divide-slate-800">
               {aktiveTage.map((tag) => (
-                <div key={tag.iso} className="flex-1">
-                  <TagGridSpalte
+                <div key={tag.iso} className="min-w-0 flex-1">
+                  <TagKopf
                     tagLabel={tag.tagLabel}
                     datumLabel={tag.label}
-                    bloecke={bloeckeWoche.filter((b) => tage[b.wochentag]?.iso === tag.iso)}
-                    startMin={startMin}
-                    endeMin={endeMin}
                     ausgewaehlt={tag.iso === ausgewaehlteTagIso}
                     heute={tag.iso === heuteIso}
-                    aktuelleZeitMin={aktuelleZeitMin}
                     onAuswaehlen={() => setAusgewaehlterTag(tag.iso)}
-                    erledigtIds={erledigtIds}
-                    kompakt={false}
                   />
                 </div>
               ))}
             </div>
           </div>
-          <div className="flex lg:hidden">
-            <Zeitachse startMin={startMin} endeMin={endeMin} />
-            <div className="flex-1">
-              <TagGridSpalte
-                tagLabel={ausgewaehlterTagObj.tagLabel}
-                datumLabel={ausgewaehlterTagObj.label}
-                bloecke={bloeckeTag}
-                startMin={startMin}
-                endeMin={endeMin}
-                ausgewaehlt
-                heute={ausgewaehlterTagObj.iso === heuteIso}
-                aktuelleZeitMin={aktuelleZeitMin}
-                onAuswaehlen={() => {}}
-                erledigtIds={erledigtIds}
-                kompakt
-              />
+          <div className="flex py-2">
+            <Zeitachse startMin={startMin} endeMin={endeMin} pxProMin={pxProMin} breite={achsenBreite} kompakt={!istDesktop} />
+            <div className="flex flex-1 divide-x divide-slate-100 dark:divide-slate-800">
+              {aktiveTage.map((tag) => (
+                <div key={tag.iso} className="min-w-0 flex-1">
+                  <TagRasterKoerper
+                    bloecke={bloeckeWoche.filter((b) => tage[b.wochentag]?.iso === tag.iso)}
+                    startMin={startMin}
+                    endeMin={endeMin}
+                    heute={tag.iso === heuteIso}
+                    aktuelleZeitMin={aktuelleZeitMin}
+                    erledigtIds={erledigtIds}
+                    kompakt={!istDesktop}
+                    pxProMin={pxProMin}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>
