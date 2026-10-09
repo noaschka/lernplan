@@ -11,8 +11,10 @@ import type {
   Wochenplan,
   WochenplanEintrag,
   Versuch,
+  StundenplanBlock,
 } from '../types';
 import { defaultState } from '../data/defaultState';
+import { blockDauerMin } from '../utils/stundenplan';
 
 interface StoreActions {
   addModul: (modul: Omit<Modul, 'id' | 'versuche' | 'dokumente'>) => string;
@@ -37,11 +39,34 @@ interface StoreActions {
   upsertEintrag: (woche: string, eintrag: WochenplanEintrag) => void;
   deleteEintrag: (woche: string, eintragId: string) => void;
 
+  upsertBlock: (block: StundenplanBlock) => void;
+  deleteBlock: (id: string) => void;
+  toggleBlockErledigt: (wocheMontagIso: string, block: StundenplanBlock, tagIso: string) => void;
+
   importState: (state: AppState) => void;
   resetState: () => void;
 }
 
 type Store = AppState & StoreActions;
+
+const PERSIST_VERSION = 1;
+
+/** Ergänzt fehlende Felder (stundenplan, settings.abWochen) bei älteren gespeicherten/importierten Ständen, ohne vorhandene Daten anzutasten. */
+function backfillState(partial: unknown): AppState {
+  const basis = defaultState();
+  if (!partial || typeof partial !== 'object') return basis;
+  const p = partial as Partial<AppState>;
+  return {
+    ...basis,
+    ...p,
+    stundenplan: Array.isArray(p.stundenplan) && p.stundenplan.length ? p.stundenplan : basis.stundenplan,
+    settings: {
+      ...basis.settings,
+      ...p.settings,
+      abWochen: { ...basis.settings.abWochen, ...p.settings?.abWochen },
+    },
+  };
+}
 
 export const useStore = create<Store>()(
   persist(
@@ -172,9 +197,56 @@ export const useStore = create<Store>()(
           ),
         })),
 
-      importState: (state) => set(() => ({ ...state })),
+      upsertBlock: (block) =>
+        set((s) => {
+          const exists = s.stundenplan.some((b) => b.id === block.id);
+          return {
+            stundenplan: exists
+              ? s.stundenplan.map((b) => (b.id === block.id ? block : b))
+              : [...s.stundenplan, block],
+          };
+        }),
+      deleteBlock: (id) =>
+        set((s) => ({
+          stundenplan: s.stundenplan.filter((b) => b.id !== id),
+          wochenplaene: s.wochenplaene.map((w) => ({
+            ...w,
+            eintraege: w.eintraege.filter((e) => e.blockId !== id),
+          })),
+        })),
+      toggleBlockErledigt: (wocheMontagIso, block, tagIso) => {
+        get().getOrCreateWoche(wocheMontagIso);
+        const woche = get().wochenplaene.find((w) => w.woche === wocheMontagIso);
+        const bestehender = woche?.eintraege.find((e) => e.blockId === block.id && e.tag === tagIso);
+        if (bestehender) {
+          get().deleteEintrag(wocheMontagIso, bestehender.id);
+        } else {
+          const dauer = blockDauerMin(block);
+          get().upsertEintrag(wocheMontagIso, {
+            id: uuid(),
+            modulId: block.modulId,
+            tag: tagIso,
+            geplantMin: dauer,
+            tatsaechlichMin: dauer,
+            blockId: block.id,
+          });
+        }
+      },
+
+      importState: (state) => set(() => backfillState(state)),
       resetState: () => set(() => ({ ...defaultState() })),
     }),
-    { name: 'studium-tracker-state-v1' },
+    {
+      name: 'studium-tracker-state-v1',
+      version: PERSIST_VERSION,
+      // zustand only calls `migrate` when the stored blob already has a numeric
+      // `version` field - older, never-migrated data has none, so migrate would
+      // never run for existing users. `merge` runs on every hydration regardless,
+      // so the backfill lives there instead.
+      merge: (persistedState, currentState) => ({
+        ...currentState,
+        ...backfillState({ ...currentState, ...(persistedState as Partial<AppState> | undefined) }),
+      }),
+    },
   ),
 );

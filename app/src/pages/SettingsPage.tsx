@@ -34,8 +34,8 @@ export default function SettingsPage() {
 
   function exportieren() {
     const state: AppState = useStore.getState();
-    const { module, lernplaene, wochenplaene, semester, settings: s } = state;
-    const payload: AppState = { module, lernplaene, wochenplaene, semester, settings: s };
+    const { module, lernplaene, wochenplaene, semester, stundenplan, settings: s } = state;
+    const payload: AppState = { module, lernplaene, wochenplaene, semester, stundenplan, settings: s };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
