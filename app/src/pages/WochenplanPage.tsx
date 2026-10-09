@@ -28,7 +28,7 @@ function minutenZuText(min: number) {
 const ART_FARBEN: Record<StundenplanBlock['art'], { basis: string; erledigt: string }> = {
   lernblock: {
     basis: 'bg-amber-300 border-amber-400 text-amber-950 dark:bg-amber-500/80 dark:border-amber-400 dark:text-white',
-    erledigt: 'bg-amber-700 border-amber-800 text-white dark:bg-amber-800 dark:border-amber-900',
+    erledigt: 'bg-slate-900 border-slate-900 text-amber-400 dark:bg-slate-950 dark:border-slate-800 dark:text-amber-300',
   },
   vorlesung: {
     basis: 'bg-slate-200 border-slate-300 text-slate-700 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100',
@@ -71,6 +71,7 @@ interface TagGridSpalteProps {
   aktuelleZeitMin: number | null;
   onAuswaehlen: () => void;
   erledigtIds: Set<string>;
+  kompakt: boolean;
 }
 
 function TagGridSpalte({
@@ -84,6 +85,7 @@ function TagGridSpalte({
   aktuelleZeitMin,
   onAuswaehlen,
   erledigtIds,
+  kompakt,
 }: TagGridSpalteProps) {
   const hoehe = (endeMin - startMin) * PX_PRO_MIN;
   return (
@@ -101,15 +103,32 @@ function TagGridSpalte({
           const top = (blockStartMin(b) - startMin) * PX_PRO_MIN;
           const h = Math.max(blockDauerMin(b) * PX_PRO_MIN, 16);
           const erledigt = erledigtIds.has(b.id);
+          const haken = erledigt && b.art === 'lernblock';
           const farben = erledigt ? ART_FARBEN[b.art].erledigt : ART_FARBEN[b.art].basis;
           return (
             <div
               key={b.id}
-              className={`absolute inset-x-0.5 overflow-hidden rounded border px-1 py-0.5 text-[9px] leading-tight break-words ${farben}`}
+              lang="de"
+              className={`absolute inset-x-0.5 z-0 rounded border px-1 py-0.5 text-[9px] leading-tight break-words [hyphens:auto] ${farben}`}
               style={{ top, height: h }}
               title={`${b.titel} · ${b.start}–${b.ende}`}
             >
-              <div className="font-semibold">{b.kurz || b.titel}</div>
+              {kompakt ? (
+                <div className="font-semibold">
+                  {haken && '✓ '}
+                  {b.kurz || b.titel}
+                </div>
+              ) : (
+                <>
+                  <div className="font-semibold">
+                    {haken && '✓ '}
+                    {b.titel}
+                  </div>
+                  <div className="opacity-80">
+                    {b.start}&ndash;{b.ende}
+                  </div>
+                </>
+              )}
             </div>
           );
         })}
@@ -195,7 +214,7 @@ function TagDetailPanel({
                       onClick={() => onToggleBlock(b)}
                       className={`flex h-11 min-w-[44px] shrink-0 items-center justify-center rounded-lg border px-3 text-xs font-semibold ${
                         erledigt
-                          ? 'border-white/40 bg-black/10 text-white'
+                          ? 'border-amber-400/30 bg-black/20 text-amber-300'
                           : 'border-slate-300 bg-white text-slate-600 hover:border-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300'
                       }`}
                     >
@@ -356,7 +375,7 @@ export default function WochenplanPage() {
             Heute
           </button>
           <span className="text-xs text-slate-400">
-            KW {kalenderwoche(montag)} &middot; Woche {typ} ({typLabel})
+            KW {kalenderwoche(montag)}, Woche {typ}, {typLabel}
           </span>
         </div>
         <div className="flex flex-col gap-1 text-sm">
@@ -416,6 +435,7 @@ export default function WochenplanPage() {
                     aktuelleZeitMin={aktuelleZeitMin}
                     onAuswaehlen={() => setAusgewaehlterTag(tag.iso)}
                     erledigtIds={erledigtIds}
+                    kompakt={false}
                   />
                 </div>
               ))}
@@ -435,6 +455,7 @@ export default function WochenplanPage() {
                 aktuelleZeitMin={aktuelleZeitMin}
                 onAuswaehlen={() => {}}
                 erledigtIds={erledigtIds}
+                kompakt
               />
             </div>
           </div>
