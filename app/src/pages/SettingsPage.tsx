@@ -357,9 +357,9 @@ export default function SettingsPage() {
             ) : (
               <div
                 key={block.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 px-3 py-2 text-sm dark:border-slate-800"
+                className="flex flex-col gap-2 rounded-lg border border-slate-100 px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between dark:border-slate-800"
               >
-                <div className="min-w-0">
+                <div className="min-w-0 break-words">
                   <div className="font-semibold">
                     {WOCHENTAGE_LABEL[block.wochentag]} {block.start}&ndash;{block.ende} &middot; {block.titel}
                   </div>
