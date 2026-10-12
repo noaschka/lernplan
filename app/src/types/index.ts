@@ -41,6 +41,7 @@ export interface Modul {
 export interface LernplanThema {
   id: string;
   titel: string;
+  notiz: string;
   erledigt: boolean;
   erledigtAm: string | null;
   naechsteWiederholung: string | null;

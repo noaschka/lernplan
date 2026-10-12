@@ -4,7 +4,101 @@ import { useStore } from '../store/useStore';
 import { dringlichkeit, formatiereDatum, heuteISO, tageBis } from '../utils/dates';
 import { naechsteWiederholungBerechnen } from '../utils/spacedRepetition';
 import UrgencyDot from '../components/ui/UrgencyDot';
-import { inputClass } from '../components/ui/FormField';
+import { inputClass, Field } from '../components/ui/FormField';
+import type { LernplanThema } from '../types';
+
+function ThemaZeile({
+  thema,
+  onUpdate,
+  onToggleErledigt,
+  onDelete,
+}: {
+  thema: LernplanThema;
+  onUpdate: (patch: Partial<LernplanThema>) => void;
+  onToggleErledigt: (erledigt: boolean) => void;
+  onDelete: () => void;
+}) {
+  const [bearbeiten, setBearbeiten] = useState(false);
+  const [titelEntwurf, setTitelEntwurf] = useState(thema.titel);
+  const [notizEntwurf, setNotizEntwurf] = useState(thema.notiz ?? '');
+  const [wiederholungEntwurf, setWiederholungEntwurf] = useState(thema.naechsteWiederholung ?? '');
+
+  function bearbeitenStarten() {
+    setTitelEntwurf(thema.titel);
+    setNotizEntwurf(thema.notiz ?? '');
+    setWiederholungEntwurf(thema.naechsteWiederholung ?? '');
+    setBearbeiten(true);
+  }
+
+  function speichern() {
+    onUpdate({
+      titel: titelEntwurf.trim() || thema.titel,
+      notiz: notizEntwurf,
+      naechsteWiederholung: wiederholungEntwurf || null,
+    });
+    setBearbeiten(false);
+  }
+
+  if (bearbeiten) {
+    return (
+      <div className="space-y-2 py-2">
+        <Field label="Titel">
+          <input className={`${inputClass} text-sm`} value={titelEntwurf} onChange={(e) => setTitelEntwurf(e.target.value)} autoFocus />
+        </Field>
+        <Field label="Notiz" hint="z.B. wie viel du schon geschafft hast">
+          <input className={`${inputClass} text-sm`} value={notizEntwurf} onChange={(e) => setNotizEntwurf(e.target.value)} />
+        </Field>
+        <Field label="Nächste Wiederholung">
+          <input
+            type="date"
+            className={`${inputClass} text-sm`}
+            value={wiederholungEntwurf}
+            onChange={(e) => setWiederholungEntwurf(e.target.value)}
+          />
+        </Field>
+        <div className="flex gap-2 pt-1">
+          <button
+            onClick={speichern}
+            className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900"
+          >
+            Speichern
+          </button>
+          <button
+            onClick={() => setBearbeiten(false)}
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300"
+          >
+            Abbrechen
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-start gap-3 py-2">
+      <input
+        type="checkbox"
+        className="mt-1 h-4 w-4 shrink-0"
+        checked={thema.erledigt}
+        onChange={(e) => onToggleErledigt(e.target.checked)}
+      />
+      <button onClick={bearbeitenStarten} className="min-w-0 flex-1 text-left">
+        <div className={`text-sm ${thema.erledigt ? 'text-slate-400 line-through' : ''}`}>{thema.titel}</div>
+        {thema.notiz && <div className="mt-0.5 text-xs text-slate-400">{thema.notiz}</div>}
+      </button>
+      {thema.erledigtAm && <span className="shrink-0 text-xs text-slate-400">{formatiereDatum(thema.erledigtAm)}</span>}
+      {thema.naechsteWiederholung && (
+        <span className="shrink-0 text-xs text-amber-600 dark:text-amber-400">↻ {formatiereDatum(thema.naechsteWiederholung)}</span>
+      )}
+      <button onClick={bearbeitenStarten} className="shrink-0 text-xs text-slate-400 hover:text-slate-900 dark:hover:text-white">
+        Bearbeiten
+      </button>
+      <button onClick={onDelete} className="shrink-0 text-xs text-slate-400 hover:text-red-500">
+        Entfernen
+      </button>
+    </div>
+  );
+}
 
 export default function LernplanPage() {
   const { modulId } = useParams();
@@ -40,6 +134,20 @@ export default function LernplanPage() {
     if (!neuTitel.trim()) return;
     addThema(modul!.id, neuTitel.trim());
     setNeuTitel('');
+  }
+
+  function toggleErledigt(themaId: string, checked: boolean) {
+    if (checked) {
+      const erledigtAm = heuteISO();
+      updateThema(modul!.id, themaId, {
+        erledigt: true,
+        erledigtAm,
+        wiederholungen: [],
+        naechsteWiederholung: naechsteWiederholungBerechnen({ erledigtAm, wiederholungen: [] }, intervalle),
+      });
+    } else {
+      updateThema(modul!.id, themaId, { erledigt: false, erledigtAm: null, wiederholungen: [], naechsteWiederholung: null });
+    }
   }
 
   return (
@@ -82,34 +190,13 @@ export default function LernplanPage() {
         {themen.length ? (
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {themen.map((t) => (
-              <div key={t.id} className="flex items-center gap-3 py-2">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4"
-                  checked={t.erledigt}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      const erledigtAm = heuteISO();
-                      updateThema(modul.id, t.id, {
-                        erledigt: true,
-                        erledigtAm,
-                        wiederholungen: [],
-                        naechsteWiederholung: naechsteWiederholungBerechnen({ erledigtAm, wiederholungen: [] }, intervalle),
-                      });
-                    } else {
-                      updateThema(modul.id, t.id, { erledigt: false, erledigtAm: null, wiederholungen: [], naechsteWiederholung: null });
-                    }
-                  }}
-                />
-                <span className={`flex-1 text-sm ${t.erledigt ? 'text-slate-400 line-through' : ''}`}>{t.titel}</span>
-                {t.erledigtAm && <span className="text-xs text-slate-400">{formatiereDatum(t.erledigtAm)}</span>}
-                {t.naechsteWiederholung && (
-                  <span className="text-xs text-amber-600 dark:text-amber-400">↻ {formatiereDatum(t.naechsteWiederholung)}</span>
-                )}
-                <button onClick={() => deleteThema(modul.id, t.id)} className="text-xs text-slate-400 hover:text-red-500">
-                  Entfernen
-                </button>
-              </div>
+              <ThemaZeile
+                key={t.id}
+                thema={t}
+                onToggleErledigt={(checked) => toggleErledigt(t.id, checked)}
+                onUpdate={(patch) => updateThema(modul.id, t.id, patch)}
+                onDelete={() => deleteThema(modul.id, t.id)}
+              />
             ))}
           </div>
         ) : (

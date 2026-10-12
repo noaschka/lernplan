@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { useStore } from '../store/useStore';
 import { montagDerWoche, tageDerWoche, wocheVerschieben, heuteISO } from '../utils/dates';
-import { inputClass } from '../components/ui/FormField';
+import { inputClass, Field } from '../components/ui/FormField';
 import {
   wochenTyp,
   bloeckeDerWoche,
@@ -191,7 +191,7 @@ interface TagDetailPanelProps {
   manuelleEintraege: WochenplanEintrag[];
   module: Modul[];
   onHinzufuegen: (modulId: string, geplantMin: number) => void;
-  onIstZeitPlus: (eintrag: WochenplanEintrag, minuten: number) => void;
+  onBearbeiten: (eintrag: WochenplanEintrag, patch: Partial<WochenplanEintrag>) => void;
   onLoeschen: (eintragId: string) => void;
 }
 
@@ -204,7 +204,7 @@ function TagDetailPanel({
   manuelleEintraege,
   module,
   onHinzufuegen,
-  onIstZeitPlus,
+  onBearbeiten,
   onLoeschen,
 }: TagDetailPanelProps) {
   const [modulId, setModulId] = useState(module[0]?.id ?? '');
@@ -283,23 +283,44 @@ function TagDetailPanel({
             const mod = module.find((m) => m.id === e.modulId);
             return (
               <div key={e.id} className="rounded-lg bg-slate-50 px-3 py-2 text-xs dark:bg-slate-800/60">
-                <div className="truncate font-medium">{mod?.name ?? '–'}</div>
-                <div className="mt-0.5 flex items-center justify-between text-slate-400">
-                  <span>
-                    {minutenZuText(e.tatsaechlichMin)}/{minutenZuText(e.geplantMin)}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <button
-                      onClick={() => onIstZeitPlus(e, 15)}
-                      className="flex h-8 items-center rounded-full border border-slate-200 px-2 text-[11px] hover:border-slate-400 dark:border-slate-700"
-                      title="15 Min. Ist-Zeit hinzufügen"
-                    >
-                      +15m
-                    </button>
-                    <button onClick={() => onLoeschen(e.id)} className="flex h-8 w-8 items-center justify-center hover:text-red-500">
-                      &times;
-                    </button>
-                  </span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate font-medium">{mod?.name ?? '–'}</span>
+                  <button onClick={() => onLoeschen(e.id)} className="flex h-8 w-8 shrink-0 items-center justify-center hover:text-red-500">
+                    &times;
+                  </button>
+                </div>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-slate-400">
+                  <label className="flex items-center gap-1">
+                    <span>Ist</span>
+                    <input
+                      type="number"
+                      min={0}
+                      step={5}
+                      value={e.tatsaechlichMin}
+                      onChange={(ev) => onBearbeiten(e, { tatsaechlichMin: Number(ev.target.value) })}
+                      className="w-14 rounded border border-slate-200 bg-white px-1.5 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                    />
+                    <span>min</span>
+                  </label>
+                  <button
+                    onClick={() => onBearbeiten(e, { tatsaechlichMin: e.tatsaechlichMin + 15 })}
+                    className="flex h-7 items-center rounded-full border border-slate-200 px-2 text-[11px] hover:border-slate-400 dark:border-slate-700"
+                    title="15 Min. zur Ist-Zeit hinzufügen"
+                  >
+                    +15m
+                  </button>
+                  <label className="flex items-center gap-1">
+                    <span>Soll</span>
+                    <input
+                      type="number"
+                      min={0}
+                      step={5}
+                      value={e.geplantMin}
+                      onChange={(ev) => onBearbeiten(e, { geplantMin: Number(ev.target.value) })}
+                      className="w-14 rounded border border-slate-200 bg-white px-1.5 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                    />
+                    <span>min</span>
+                  </label>
                 </div>
               </div>
             );
@@ -307,23 +328,26 @@ function TagDetailPanel({
           {!manuelleEintraege.length && <p className="text-xs text-slate-400">Noch keine manuelle Lernzeit für diesen Tag.</p>}
         </div>
         {module.length > 0 ? (
-          <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-2 dark:border-slate-800">
-            <select className={`${inputClass} flex-1 !py-1.5 text-xs`} value={modulId} onChange={(e) => setModulId(e.target.value)}>
-              {module.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.kuerzel || m.name}
-                </option>
-              ))}
-            </select>
-            <input
-              type="number"
-              min={0}
-              step={5}
-              title="Geplant (Min.)"
-              className={`${inputClass} w-20 !py-1.5 text-xs`}
-              value={geplantMin}
-              onChange={(e) => setGeplantMin(Number(e.target.value))}
-            />
+          <div className="mt-2 grid grid-cols-[1fr_5rem_auto] items-end gap-1.5 border-t border-slate-100 pt-2 dark:border-slate-800">
+            <Field label="Modul">
+              <select className={`${inputClass} w-full !py-1.5 text-xs`} value={modulId} onChange={(e) => setModulId(e.target.value)}>
+                {module.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.kuerzel || m.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Minuten">
+              <input
+                type="number"
+                min={0}
+                step={5}
+                className={`${inputClass} w-full !py-1.5 text-xs`}
+                value={geplantMin}
+                onChange={(e) => setGeplantMin(Number(e.target.value))}
+              />
+            </Field>
             <button
               onClick={() => modulId && onHinzufuegen(modulId, geplantMin)}
               className="flex h-9 min-w-[44px] shrink-0 items-center justify-center rounded-lg bg-slate-900 px-3 text-xs font-semibold text-white dark:bg-white dark:text-slate-900"
@@ -497,9 +521,7 @@ export default function WochenplanPage() {
             onHinzufuegen={(modulId, geplantMin) =>
               upsertEintrag(montag, { id: uuid(), modulId, tag: ausgewaehlterTagObj.iso, geplantMin, tatsaechlichMin: 0 })
             }
-            onIstZeitPlus={(eintrag, minuten) =>
-              upsertEintrag(montag, { ...eintrag, tatsaechlichMin: eintrag.tatsaechlichMin + minuten })
-            }
+            onBearbeiten={(eintrag, patch) => upsertEintrag(montag, { ...eintrag, ...patch })}
             onLoeschen={(eintragId) => deleteEintrag(montag, eintragId)}
           />
         </div>

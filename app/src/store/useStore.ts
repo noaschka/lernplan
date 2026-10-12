@@ -142,6 +142,7 @@ export const useStore = create<Store>()(
         const thema: LernplanThema = {
           id: uuid(),
           titel,
+          notiz: '',
           erledigt: false,
           erledigtAm: null,
           naechsteWiederholung: null,
