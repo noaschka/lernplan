@@ -63,6 +63,7 @@ export interface WochenplanEintrag {
   tag: string;
   geplantMin: number;
   tatsaechlichMin: number;
+  notiz: string;
   blockId?: string;
 }
 

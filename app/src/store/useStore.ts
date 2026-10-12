@@ -230,6 +230,7 @@ export const useStore = create<Store>()(
             tag: tagIso,
             geplantMin: dauer,
             tatsaechlichMin: dauer,
+            notiz: '',
             blockId: block.id,
           });
         }
