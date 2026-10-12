@@ -55,39 +55,6 @@ export function istMinutenDerWoche(eintraege: WochenplanEintrag[]): number {
   return eintraege.reduce((s, e) => s + e.tatsaechlichMin, 0);
 }
 
-export interface FachZeit {
-  modulId: string;
-  sollMin: number;
-  istMin: number;
-}
-
-export function fachZeitenDerWoche(stundenplanDerWoche: StundenplanBlock[], eintraege: WochenplanEintrag[]): FachZeit[] {
-  const map = new Map<string, FachZeit>();
-  const eintrag = (modulId: string) => {
-    let f = map.get(modulId);
-    if (!f) {
-      f = { modulId, sollMin: 0, istMin: 0 };
-      map.set(modulId, f);
-    }
-    return f;
-  };
-
-  stundenplanDerWoche
-    .filter((b) => b.art === 'lernblock' && b.modulId)
-    .forEach((b) => {
-      eintrag(b.modulId as string).sollMin += blockDauerMin(b);
-    });
-
-  eintraege.forEach((e) => {
-    if (!e.modulId) return;
-    const f = eintrag(e.modulId);
-    f.istMin += e.tatsaechlichMin;
-    if (!e.blockId) f.sollMin += e.geplantMin;
-  });
-
-  return Array.from(map.values());
-}
-
 export function kalenderwoche(montagIso: string): number {
   return getISOWeek(parseISO(montagIso));
 }

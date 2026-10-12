@@ -14,7 +14,6 @@ import type {
   StundenplanBlock,
 } from '../types';
 import { defaultState } from '../data/defaultState';
-import { blockDauerMin } from '../utils/stundenplan';
 
 interface StoreActions {
   addModul: (modul: Omit<Modul, 'id' | 'versuche' | 'dokumente'>) => string;
@@ -41,7 +40,6 @@ interface StoreActions {
 
   upsertBlock: (block: StundenplanBlock) => void;
   deleteBlock: (id: string) => void;
-  toggleBlockErledigt: (wocheMontagIso: string, block: StundenplanBlock, tagIso: string) => void;
 
   importState: (state: AppState) => void;
   resetState: () => void;
@@ -216,26 +214,6 @@ export const useStore = create<Store>()(
             eintraege: w.eintraege.filter((e) => e.blockId !== id),
           })),
         })),
-      toggleBlockErledigt: (wocheMontagIso, block, tagIso) => {
-        get().getOrCreateWoche(wocheMontagIso);
-        const woche = get().wochenplaene.find((w) => w.woche === wocheMontagIso);
-        const bestehender = woche?.eintraege.find((e) => e.blockId === block.id && e.tag === tagIso);
-        if (bestehender) {
-          get().deleteEintrag(wocheMontagIso, bestehender.id);
-        } else {
-          const dauer = blockDauerMin(block);
-          get().upsertEintrag(wocheMontagIso, {
-            id: uuid(),
-            modulId: block.modulId,
-            tag: tagIso,
-            geplantMin: dauer,
-            tatsaechlichMin: dauer,
-            notiz: '',
-            blockId: block.id,
-          });
-        }
-      },
-
       importState: (state) => set(() => backfillState(state)),
       resetState: () => set(() => ({ ...defaultState() })),
     }),
