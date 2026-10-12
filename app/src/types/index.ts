@@ -38,10 +38,13 @@ export interface Modul {
   versuche: Versuch[];
 }
 
+export type ThemaFortschritt = 'nicht_begonnen' | 'teilweise' | 'vollstaendig';
+
 export interface LernplanThema {
   id: string;
   titel: string;
   notiz: string;
+  fortschritt: ThemaFortschritt;
   erledigt: boolean;
   erledigtAm: string | null;
   naechsteWiederholung: string | null;

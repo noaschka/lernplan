@@ -143,6 +143,7 @@ export const useStore = create<Store>()(
           id: uuid(),
           titel,
           notiz: '',
+          fortschritt: 'nicht_begonnen',
           erledigt: false,
           erledigtAm: null,
           naechsteWiederholung: null,

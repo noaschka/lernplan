@@ -5,7 +5,19 @@ import { dringlichkeit, formatiereDatum, heuteISO, tageBis } from '../utils/date
 import { naechsteWiederholungBerechnen } from '../utils/spacedRepetition';
 import UrgencyDot from '../components/ui/UrgencyDot';
 import { inputClass, Field } from '../components/ui/FormField';
-import type { LernplanThema } from '../types';
+import type { LernplanThema, ThemaFortschritt } from '../types';
+
+const FORTSCHRITT_LABEL: Record<ThemaFortschritt, string> = {
+  nicht_begonnen: 'Nicht begonnen',
+  teilweise: 'Teilweise',
+  vollstaendig: 'Vollständig',
+};
+
+const FORTSCHRITT_BADGE: Record<ThemaFortschritt, string> = {
+  nicht_begonnen: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
+  teilweise: 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
+  vollstaendig: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400',
+};
 
 function ThemaZeile({
   thema,
@@ -21,11 +33,13 @@ function ThemaZeile({
   const [bearbeiten, setBearbeiten] = useState(false);
   const [titelEntwurf, setTitelEntwurf] = useState(thema.titel);
   const [notizEntwurf, setNotizEntwurf] = useState(thema.notiz ?? '');
+  const [fortschrittEntwurf, setFortschrittEntwurf] = useState<ThemaFortschritt>(thema.fortschritt ?? 'nicht_begonnen');
   const [wiederholungEntwurf, setWiederholungEntwurf] = useState(thema.naechsteWiederholung ?? '');
 
   function bearbeitenStarten() {
     setTitelEntwurf(thema.titel);
     setNotizEntwurf(thema.notiz ?? '');
+    setFortschrittEntwurf(thema.fortschritt ?? 'nicht_begonnen');
     setWiederholungEntwurf(thema.naechsteWiederholung ?? '');
     setBearbeiten(true);
   }
@@ -34,6 +48,7 @@ function ThemaZeile({
     onUpdate({
       titel: titelEntwurf.trim() || thema.titel,
       notiz: notizEntwurf,
+      fortschritt: fortschrittEntwurf,
       naechsteWiederholung: wiederholungEntwurf || null,
     });
     setBearbeiten(false);
@@ -45,7 +60,18 @@ function ThemaZeile({
         <Field label="Titel">
           <input className={`${inputClass} text-sm`} value={titelEntwurf} onChange={(e) => setTitelEntwurf(e.target.value)} autoFocus />
         </Field>
-        <Field label="Notiz" hint="z.B. wie viel du schon geschafft hast">
+        <Field label="Fortschritt">
+          <select
+            className={`${inputClass} text-sm`}
+            value={fortschrittEntwurf}
+            onChange={(e) => setFortschrittEntwurf(e.target.value as ThemaFortschritt)}
+          >
+            <option value="nicht_begonnen">Nicht begonnen</option>
+            <option value="teilweise">Teilweise (volle Zeit nicht geschafft)</option>
+            <option value="vollstaendig">Vollständig</option>
+          </select>
+        </Field>
+        <Field label="Notiz" hint="z.B. welche Themen noch fehlen">
           <input className={`${inputClass} text-sm`} value={notizEntwurf} onChange={(e) => setNotizEntwurf(e.target.value)} />
         </Field>
         <Field label="Nächste Wiederholung">
@@ -83,7 +109,14 @@ function ThemaZeile({
         onChange={(e) => onToggleErledigt(e.target.checked)}
       />
       <button onClick={bearbeitenStarten} className="min-w-0 flex-1 text-left">
-        <div className={`text-sm ${thema.erledigt ? 'text-slate-400 line-through' : ''}`}>{thema.titel}</div>
+        <div className="flex items-center gap-2">
+          <span className={`text-sm ${thema.erledigt ? 'text-slate-400 line-through' : ''}`}>{thema.titel}</span>
+          {thema.fortschritt && thema.fortschritt !== 'nicht_begonnen' && (
+            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${FORTSCHRITT_BADGE[thema.fortschritt]}`}>
+              {FORTSCHRITT_LABEL[thema.fortschritt]}
+            </span>
+          )}
+        </div>
         {thema.notiz && <div className="mt-0.5 text-xs text-slate-400">{thema.notiz}</div>}
       </button>
       {thema.erledigtAm && <span className="shrink-0 text-xs text-slate-400">{formatiereDatum(thema.erledigtAm)}</span>}
