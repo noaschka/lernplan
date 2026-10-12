@@ -40,6 +40,7 @@ interface StoreActions {
 
   upsertBlock: (block: StundenplanBlock) => void;
   deleteBlock: (id: string) => void;
+  setStundenplan: (bloecke: StundenplanBlock[]) => void;
 
   importState: (state: AppState) => void;
   resetState: () => void;
@@ -214,6 +215,8 @@ export const useStore = create<Store>()(
             eintraege: w.eintraege.filter((e) => e.blockId !== id),
           })),
         })),
+      setStundenplan: (bloecke) => set(() => ({ stundenplan: bloecke })),
+
       importState: (state) => set(() => backfillState(state)),
       resetState: () => set(() => ({ ...defaultState() })),
     }),
