@@ -256,7 +256,7 @@ function TagDetailPanel({
                     {b.notiz && <div className="mt-0.5 break-words text-xs opacity-70">{b.notiz}</div>}
                   </div>
                   {istLernblock && (
-                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-current/20 pt-2 text-xs">
+                    <div className="mt-2 space-y-1.5 border-t border-current/20 pt-2 text-xs">
                       <label className="flex items-center gap-1">
                         <span>Geschafft</span>
                         <input
@@ -273,7 +273,7 @@ function TagDetailPanel({
                         placeholder="Was hast du gelernt?"
                         value={eintrag?.notiz ?? ''}
                         onChange={(ev) => onBearbeitenBlock(b, { notiz: ev.target.value })}
-                        className="min-w-0 flex-1 rounded border border-slate-300 bg-white/90 px-1.5 py-1 text-slate-900"
+                        className="w-full rounded border border-slate-300 bg-white/90 px-1.5 py-1 text-slate-900"
                       />
                     </div>
                   )}
