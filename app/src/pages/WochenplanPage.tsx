@@ -467,8 +467,16 @@ export default function WochenplanPage() {
 
   const ausgewaehlterTagObj = tage.find((t) => t.iso === ausgewaehlteTagIso) ?? tage[0];
   const bloeckeTag = bloeckeWoche.filter((b) => tage[b.wochentag]?.iso === ausgewaehlteTagIso);
-  const manuelleEintraegeTag = eintraege.filter((e) => e.tag === ausgewaehlteTagIso && !e.blockId);
-  const blockEintraegeTag = eintraege.filter((e) => e.tag === ausgewaehlteTagIso && e.blockId);
+  const gueltigeBlockIds = new Set(stundenplan.map((b) => b.id));
+  // Einträge, deren Block gelöscht/ersetzt wurde (z.B. durch einen .ics-Import), werden wie
+  // manuelle Einträge behandelt, damit sie sichtbar und bearbeitbar/löschbar bleiben, statt
+  // unsichtbar in den Wochensummen hängen zu bleiben.
+  const manuelleEintraegeTag = eintraege.filter(
+    (e) => e.tag === ausgewaehlteTagIso && (!e.blockId || !gueltigeBlockIds.has(e.blockId)),
+  );
+  const blockEintraegeTag = eintraege.filter(
+    (e) => e.tag === ausgewaehlteTagIso && e.blockId && gueltigeBlockIds.has(e.blockId),
+  );
 
   return (
     <div>
