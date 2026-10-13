@@ -107,7 +107,7 @@ function BlockForm({
             <option value="">&ndash; kein Modul &ndash;</option>
             {module.map((m) => (
               <option key={m.id} value={m.id}>
-                {m.kuerzel || m.name}
+                {m.name}
               </option>
             ))}
           </select>
@@ -394,7 +394,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="text-xs text-slate-400">
                     {ART_LABEL[block.art]} &middot; {WOCHEN_LABEL[block.wochen]}
-                    {block.modulId && ` · ${module.find((m) => m.id === block.modulId)?.kuerzel ?? ''}`}
+                    {block.modulId && ` · ${module.find((m) => m.id === block.modulId)?.name ?? ''}`}
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">

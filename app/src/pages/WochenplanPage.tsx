@@ -252,7 +252,7 @@ function TagDetailPanel({
                     </div>
                     <div className="text-xs opacity-80">
                       {b.start}&ndash;{b.ende} &middot; {ART_LABEL[b.art]}
-                      {mod && ` · ${mod.kuerzel || mod.name}`}
+                      {mod && ` · ${mod.name}`}
                     </div>
                     {b.notiz && <div className="mt-0.5 break-words text-xs opacity-70">{b.notiz}</div>}
                   </div>
@@ -354,7 +354,7 @@ function TagDetailPanel({
               <select className={`${inputClass} w-full !py-1.5 text-xs`} value={modulId} onChange={(e) => setModulId(e.target.value)}>
                 {module.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.kuerzel || m.name}
+                    {m.name}
                   </option>
                 ))}
               </select>
@@ -425,7 +425,7 @@ export default function WochenplanPage() {
     .filter((f) => f.sollMin > 0)
     .map((f) => ({ ...f, modul: module.find((m) => m.id === f.modulId) }))
     .filter((f) => f.modul)
-    .sort((a, b) => a.modul!.kuerzel.localeCompare(b.modul!.kuerzel));
+    .sort((a, b) => a.modul!.name.localeCompare(b.modul!.name));
 
   const heuteIso = heuteISO();
   const istAktuelleWoche = montag === montagDerWoche();
@@ -531,7 +531,7 @@ export default function WochenplanPage() {
               const rest = Math.max(0, sollMin - istMin);
               return (
                 <div key={modul!.id} className="flex items-center justify-between gap-2 py-1.5">
-                  <span className="truncate">{modul!.kuerzel || modul!.name}</span>
+                  <span className="truncate">{modul!.name}</span>
                   <span className={`shrink-0 text-xs ${rest === 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
                     {rest === 0 ? 'geschafft' : `noch ${minutenZuText(rest)}`}
                     <span className="text-slate-400"> &middot; {minutenZuText(istMin)} / {minutenZuText(sollMin)}</span>
