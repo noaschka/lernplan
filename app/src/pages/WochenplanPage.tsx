@@ -12,6 +12,7 @@ import {
   aktiveWochentage,
   sollMinutenDerWoche,
   istMinutenDerWoche,
+  fachZeitenDerWoche,
   kalenderwoche,
 } from '../utils/stundenplan';
 import type { Modul, StundenplanBlock, WochenplanEintrag } from '../types';
@@ -420,6 +421,12 @@ export default function WochenplanPage() {
   const sollGesamt = sollMinutenDerWoche(bloeckeWoche, eintraege);
   const istGesamt = istMinutenDerWoche(eintraege);
 
+  const fachZeitenOffen = fachZeitenDerWoche(bloeckeWoche, eintraege)
+    .filter((f) => f.sollMin > 0)
+    .map((f) => ({ ...f, modul: module.find((m) => m.id === f.modulId) }))
+    .filter((f) => f.modul)
+    .sort((a, b) => a.modul!.kuerzel.localeCompare(b.modul!.kuerzel));
+
   const heuteIso = heuteISO();
   const istAktuelleWoche = montag === montagDerWoche();
   const aktuelleZeitMin = istAktuelleWoche ? jetzt.getHours() * 60 + jetzt.getMinutes() : null;
@@ -515,6 +522,26 @@ export default function WochenplanPage() {
           />
         </div>
       </div>
+
+      {fachZeitenOffen.length > 0 && (
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-1 text-xs font-bold uppercase tracking-wide text-slate-400">Noch offen pro Fach · diese Woche</div>
+          <div className="divide-y divide-slate-100 text-sm dark:divide-slate-800">
+            {fachZeitenOffen.map(({ modul, sollMin, istMin }) => {
+              const rest = Math.max(0, sollMin - istMin);
+              return (
+                <div key={modul!.id} className="flex items-center justify-between gap-2 py-1.5">
+                  <span className="truncate">{modul!.kuerzel || modul!.name}</span>
+                  <span className={`shrink-0 text-xs ${rest === 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                    {rest === 0 ? 'geschafft' : `noch ${minutenZuText(rest)}`}
+                    <span className="text-slate-400"> &middot; {minutenZuText(istMin)} / {minutenZuText(sollMin)}</span>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="mt-4 flex flex-col gap-4 lg:flex-row">
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 lg:flex-[2]">
