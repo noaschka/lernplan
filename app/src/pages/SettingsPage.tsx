@@ -230,7 +230,7 @@ export default function SettingsPage() {
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const { bloecke, einmaligeAnzahl } = icsDateiZuStundenplan(String(reader.result), settings.abWochen);
+        const { bloecke, einmaligeAnzahl } = icsDateiZuStundenplan(String(reader.result), settings.abWochen, module);
         if (!bloecke.length) throw new Error('keine Termine erkannt');
         const hinweisEinmalig = einmaligeAnzahl > 0 ? `\n${einmaligeAnzahl} einmalige(r) Termin(e) ohne Wiederholung wurden übersprungen.` : '';
         if (

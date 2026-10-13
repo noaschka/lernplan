@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import type { AbWochenSettings, StundenplanBlock } from '../types';
+import type { AbWochenSettings, Modul, StundenplanBlock } from '../types';
 import { wochenTyp } from './stundenplan';
 
 interface IcsRohEvent {
@@ -12,7 +12,18 @@ interface IcsRohEvent {
   startHHMM: string;
   endeHHMM: string;
   rruleIntervall: number | null; // null = kein RRULE, also Einzeltermin
+  kategorie: string | null; // optionale CATEGORIES-Eigenschaft -> bestimmt die Art
+  modulKuerzel: string | null; // optionale X-MODUL-KUERZEL-Eigenschaft -> bestimmt das Modul
+  kurz: string; // optionale X-KURZ-Eigenschaft -> Kurztitel
 }
+
+const KATEGORIE_ZU_ART: Record<string, StundenplanBlock['art']> = {
+  lernblock: 'lernblock',
+  vorlesung: 'vorlesung',
+  frei: 'frei',
+  engagement: 'frei',
+  puffer: 'frei',
+};
 
 export interface IcsImportErgebnis {
   bloecke: StundenplanBlock[];
@@ -134,6 +145,9 @@ function baueRohEvent(eig: Record<string, { params: Record<string, string>; wert
     startHHMM: `${pad(start.stunde)}:${pad(start.minute)}`,
     endeHHMM,
     rruleIntervall,
+    kategorie: eig.CATEGORIES?.wert.split(',')[0]?.trim() ?? null,
+    modulKuerzel: eig['X-MODUL-KUERZEL']?.wert.trim() ?? null,
+    kurz: eig['X-KURZ']?.wert.trim() ?? '',
   };
 }
 
@@ -173,23 +187,25 @@ function montagIsoFuerEvent(e: IcsRohEvent): string {
   return datum.toISOString().slice(0, 10);
 }
 
-function baueBlock(e: IcsRohEvent, wochen: StundenplanBlock['wochen']): StundenplanBlock {
+function baueBlock(e: IcsRohEvent, wochen: StundenplanBlock['wochen'], module: Modul[]): StundenplanBlock {
+  const art = e.kategorie ? (KATEGORIE_ZU_ART[e.kategorie.toLowerCase()] ?? 'vorlesung') : 'vorlesung';
+  const modul = e.modulKuerzel ? module.find((m) => m.kuerzel.toLowerCase() === e.modulKuerzel!.toLowerCase()) : undefined;
   return {
     id: uuid(),
     wochentag: e.wochentag,
     start: e.startHHMM,
     ende: e.endeHHMM,
-    art: 'vorlesung',
+    art,
     titel: e.titel,
-    kurz: '',
-    modulId: null,
+    kurz: e.kurz,
+    modulId: modul?.id ?? null,
     wochen,
     notiz: e.ort,
     quelle: 'import',
   };
 }
 
-export function icsDateiZuStundenplan(text: string, abWochen: AbWochenSettings): IcsImportErgebnis {
+export function icsDateiZuStundenplan(text: string, abWochen: AbWochenSettings, module: Modul[]): IcsImportErgebnis {
   const events = parseIcs(text);
   const mitRrule = events.filter((e) => e.rruleIntervall !== null);
   const ohneRrule = events.filter((e) => e.rruleIntervall === null);
@@ -198,7 +214,7 @@ export function icsDateiZuStundenplan(text: string, abWochen: AbWochenSettings):
 
   for (const e of mitRrule) {
     const wochen = (e.rruleIntervall as number) >= 2 ? wochenTyp(montagIsoFuerEvent(e), abWochen) : 'AB';
-    bloecke.push(baueBlock(e, wochen));
+    bloecke.push(baueBlock(e, wochen, module));
   }
 
   const gruppen = new Map<string, IcsRohEvent[]>();
@@ -220,7 +236,7 @@ export function icsDateiZuStundenplan(text: string, abWochen: AbWochenSettings):
     const sortiert = luecken.slice().sort((a, b) => a - b);
     const median = sortiert[Math.floor(sortiert.length / 2)];
     const wochen = median >= 10 ? wochenTyp(montagIsoFuerEvent(liste[0]), abWochen) : 'AB';
-    bloecke.push(baueBlock(liste[0], wochen));
+    bloecke.push(baueBlock(liste[0], wochen, module));
   }
 
   return { bloecke, einmaligeAnzahl };
