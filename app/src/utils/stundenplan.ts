@@ -91,6 +91,16 @@ export function istMinutenDerWoche(eintraege: WochenplanEintrag[]): number {
   return eintraege.reduce((s, e) => s + e.tatsaechlichMin, 0);
 }
 
+// Soll-Beitrag eines Eintrags zu GENAU dem Fach, das der Eintrag trägt (eintrag.modulId) – anders als
+// zusatzSollMinDesEintrags, das nur "zählt der Block schon mit" prüft, ohne auf ein bestimmtes Fach zu
+// schauen. Nötig für Lernblöcke ohne eigenes Fach (z.B. "Mathe / OR-Videos"), bei denen das Fach erst
+// am Eintrag selbst gewählt wird: deren Blockdauer wird sonst nirgends als Soll gezählt.
+function fachSollBeitragDesEintrags(eintrag: WochenplanEintrag, stundenplanDerWoche: StundenplanBlock[]): number {
+  const block = stundenplanDerWoche.find((b) => b.id === eintrag.blockId && b.art === 'lernblock');
+  if (!block) return eintrag.geplantMin;
+  return block.modulId === eintrag.modulId ? 0 : blockDauerMin(block);
+}
+
 export interface FachZeit {
   modulId: string;
   sollMin: number;
@@ -118,7 +128,7 @@ export function fachZeitenDerWoche(stundenplanDerWoche: StundenplanBlock[], eint
     if (!e.modulId) return;
     const f = eintrag(e.modulId);
     f.istMin += e.tatsaechlichMin;
-    f.sollMin += zusatzSollMinDesEintrags(e, stundenplanDerWoche);
+    f.sollMin += fachSollBeitragDesEintrags(e, stundenplanDerWoche);
   });
 
   return Array.from(map.values());

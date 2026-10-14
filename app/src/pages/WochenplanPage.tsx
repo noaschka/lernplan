@@ -191,7 +191,7 @@ interface TagDetailPanelProps {
   heute: boolean;
   bloecke: StundenplanBlock[];
   blockEintraege: WochenplanEintrag[];
-  onBearbeitenBlock: (block: StundenplanBlock, patch: Partial<Pick<WochenplanEintrag, 'tatsaechlichMin' | 'notiz'>>) => void;
+  onBearbeitenBlock: (block: StundenplanBlock, patch: Partial<Pick<WochenplanEintrag, 'tatsaechlichMin' | 'notiz' | 'modulId'>>) => void;
   manuelleEintraege: WochenplanEintrag[];
   manuellSoll: number;
   verschobeneEintragIds: Set<string>;
@@ -242,7 +242,7 @@ function TagDetailPanel({
             .map((b) => {
               const eintrag = blockEintraege.find((e) => e.blockId === b.id);
               const geschafftMin = eintrag?.tatsaechlichMin ?? 0;
-              const mod = module.find((m) => m.id === b.modulId);
+              const mod = module.find((m) => m.id === (b.modulId ?? eintrag?.modulId));
               const istLernblock = b.art === 'lernblock';
               const dauer = blockDauerMin(b);
               const erledigt = istLernblock && geschafftMin >= dauer;
@@ -264,6 +264,23 @@ function TagDetailPanel({
                   </div>
                   {istLernblock && (
                     <div className="mt-2 space-y-1.5 border-t border-current/20 pt-2 text-xs">
+                      {b.modulId === null && (
+                        <label className="flex items-center gap-1">
+                          <span>Fach</span>
+                          <select
+                            value={eintrag?.modulId ?? ''}
+                            onChange={(ev) => onBearbeitenBlock(b, { modulId: ev.target.value || null })}
+                            className="min-w-0 flex-1 rounded border border-slate-300 bg-white/90 px-1.5 py-1 text-slate-900"
+                          >
+                            <option value="">&ndash; Fach w&auml;hlen, sonst z&auml;hlt die Zeit nirgends &ndash;</option>
+                            {module.map((m) => (
+                              <option key={m.id} value={m.id}>
+                                {m.name}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
                       <label className="flex items-center gap-1">
                         <span>Geschafft</span>
                         <input
@@ -450,7 +467,7 @@ export default function WochenplanPage() {
       .map((e) => e.blockId as string),
   );
 
-  function blockEintragAktualisieren(block: StundenplanBlock, tagIso: string, patch: Partial<Pick<WochenplanEintrag, 'tatsaechlichMin' | 'notiz'>>) {
+  function blockEintragAktualisieren(block: StundenplanBlock, tagIso: string, patch: Partial<Pick<WochenplanEintrag, 'tatsaechlichMin' | 'notiz' | 'modulId'>>) {
     const bestehender = eintraege.find((e) => e.blockId === block.id && e.tag === tagIso);
     if (bestehender) {
       upsertEintrag(montag, { ...bestehender, ...patch });
